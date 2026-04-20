@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import { NotificationBell } from '@/src/components/NotificationBell';
+import { ProfileButton } from '@/src/components/ProfileButton';
+
 export const HeaderHome = () => (
   <View style={styles.header}>
     <View>
@@ -9,13 +12,8 @@ export const HeaderHome = () => (
       <Text style={styles.date}>Hoy, 20 de Mayo</Text>
     </View>
     <View style={styles.actions}>
-      <TouchableOpacity style={styles.iconBtn}>
-        <MaterialCommunityIcons name="bell-outline" size={24} color="#1F2937" />
-        <View style={styles.badge} />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconBtn}>
-        <MaterialCommunityIcons name="account-circle-outline" size={26} color="#1F2937" />
-      </TouchableOpacity>
+      <NotificationBell />
+      <ProfileButton />
     </View>
   </View>
 );

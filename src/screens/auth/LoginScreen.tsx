@@ -5,9 +5,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 // Importamos nuestros componentes y hooks
-import { CustomInput } from '../../components/CustomInput';
-import { CustomButton } from '../../components/CustomButton';
-import { useAuth } from '../../hooks/useAuth';
+import { CustomInput } from '@/src/components/CustomInput';
+import { CustomButton } from '@/src/components/CustomButton';
+import { useAuth } from '@/src/hooks/useAuth';
 
 export const LoginScreen = () => {
   const [email, setEmail] = useState('');

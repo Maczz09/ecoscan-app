@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-import { CustomInput } from '../../components/CustomInput';
-import { CustomButton } from '../../components/CustomButton';
-import { useForgotPassword } from '../../hooks/useForgotPassword'; // <-- Importamos nuestro hook
+import { CustomInput } from '@/src/components/CustomInput';
+import { CustomButton } from '@/src/components/CustomButton';
+import { useForgotPassword } from '@/src/hooks/useForgotPassword'; // <-- Importamos nuestro hook
 
 export const ForgotPasswordScreen = () => {
   const router = useRouter();

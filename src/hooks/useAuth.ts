@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuthStore } from '../store/useAuthStore'; // <-- Importamos el store
+import { useAuthStore } from '@/src/store/useAuthStore'; // <-- Importamos el store
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);

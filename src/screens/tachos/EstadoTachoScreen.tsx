@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTacho } from '../../hooks/useTacho';
-import { LevelIndicator } from '../../components/LevelIndicator';
+import { useTacho } from '@/src/hooks/useTacho';
+import { LevelIndicator } from '@/src/components/LevelIndicator';
+import { NotificationBell } from '@/src/components/NotificationBell';
+import { ProfileButton } from '@/src/components/ProfileButton';
+import { SidebarMenu } from '@/src/components/SidebarMenu';
 
 export const EstadoTachoScreen = () => {
   const { data, isLoading } = useTacho();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   // Fecha dinámica real
   const fechaActual = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(new Date());
@@ -22,18 +26,18 @@ export const EstadoTachoScreen = () => {
         
         {/* HEADER */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Hola, Max 👋</Text>
-            <Text style={styles.date}>Hoy, {fechaActual}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuBtn}>
+              <MaterialCommunityIcons name="menu" size={28} color="#111827" />
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.greeting}>Hola, Max 👋</Text>
+              <Text style={styles.date}>Hoy, {fechaActual}</Text>
+            </View>
           </View>
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <MaterialCommunityIcons name="bell-outline" size={24} color="#1F2937" />
-              <View style={styles.badge} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
-              <MaterialCommunityIcons name="account-circle-outline" size={26} color="#1F2937" />
-            </TouchableOpacity>
+            <NotificationBell />
+            <ProfileButton />
           </View>
         </View>
 
@@ -85,6 +89,8 @@ export const EstadoTachoScreen = () => {
           <Text style={styles.scanBtnText}>Escanear Nuevo Tacho</Text>
         </TouchableOpacity>
       </View>
+
+      <SidebarMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
     </SafeAreaView>
   );
 };
@@ -94,8 +100,9 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  greeting: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
-  date: { fontSize: 14, color: '#6B7280', textTransform: 'capitalize' },
+  menuBtn: { padding: 8, backgroundColor: '#F3F4F6', borderRadius: 12 },
+  greeting: { fontSize: 22, fontWeight: 'bold', color: '#111827' },
+  date: { fontSize: 13, color: '#6B7280', textTransform: 'capitalize' },
   actions: { flexDirection: 'row', gap: 12 },
   iconBtn: { padding: 8, backgroundColor: '#FFF', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5 },
   badge: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, backgroundColor: '#EF4444', borderRadius: 4, borderWidth: 1, borderColor: '#fff' },
@@ -119,7 +126,7 @@ const styles = StyleSheet.create({
 
   floatingBottom: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 110, // Elevado para no tapar la barra de navegación (Tabs)
     left: 20,
     right: 20,
     flexDirection: 'row',

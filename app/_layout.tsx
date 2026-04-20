@@ -52,6 +52,10 @@ function RootLayoutNav() {
 <Stack>
   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
   <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+  <Stack.Screen name="notificaciones" options={{ headerShown: false }} />
+  <Stack.Screen name="perfil" options={{ headerShown: false }} />
+  <Stack.Screen name="editar-perfil" options={{ headerShown: false }} />
+  <Stack.Screen name="seguridad" options={{ headerShown: false }} />
   <Stack.Screen name="+not-found" />
 </Stack>
     </ThemeProvider>
