@@ -1,6 +1,6 @@
-import { Redirect } from 'expo-router';
+import { LoginScreen } from '@/src/screens/auth/LoginScreen';
 
-// Por ahora, redirigimos directamente a la vista de Login que crearemos en la ruta de auth
+// Montamos la vista de Login directamente en la ruta raíz para evitar problemas de redirección en la Web.
 export default function Index() {
-  return <Redirect href="/(auth)/login" />;
+  return <LoginScreen />;
 }

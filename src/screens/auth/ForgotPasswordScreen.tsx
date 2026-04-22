@@ -6,12 +6,12 @@ import { useRouter } from 'expo-router';
 
 import { CustomInput } from '@/src/components/CustomInput';
 import { CustomButton } from '@/src/components/CustomButton';
-import { useForgotPassword } from '@/src/hooks/useForgotPassword'; // <-- Importamos nuestro hook
+import { useForgotPassword } from '@/src/hooks/useForgotPassword'; 
 
 export const ForgotPasswordScreen = () => {
   const router = useRouter();
   
-  // <-- Desestructuramos las 3 funciones y el estado de carga del hook
+  
   const { sendEmail, validateCode, changePassword, isLoading } = useForgotPassword();
   
   const [step, setStep] = useState(1); 

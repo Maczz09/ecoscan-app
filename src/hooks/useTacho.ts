@@ -11,8 +11,8 @@ export interface DashboardData {
     ultima_conexion: string;
   };
   metricas: {
-    eco_puntos_personales: number; // Tabla: usuarios
-    racha_dias_activos: number;    // Tabla: metricas_dashboard
+    eco_puntos_personales: number; 
+    racha_dias_activos: number;    
   };
 }
 

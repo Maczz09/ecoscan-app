@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-// Importamos nuestros componentes y hooks
 import { CustomInput } from '@/src/components/CustomInput';
 import { CustomButton } from '@/src/components/CustomButton';
 import { useAuth } from '@/src/hooks/useAuth';
@@ -25,7 +24,6 @@ const handleLogin = async () => {
     const result = await login(email, password);
     
     if (result.success) {
-      // Quitamos el alert y activamos la redirección a las pestañas (Dashboard)
       router.replace('/(tabs)'); 
     } else {
       alert(result.message || 'Error al iniciar sesión');
@@ -38,7 +36,6 @@ const handleLogin = async () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        {/* Encabezado y Logo */}
         <View style={styles.headerContainer}>
           <View style={styles.logoCircle}>
             <MaterialCommunityIcons name="recycle" size={60} color="#10B981" />
@@ -47,7 +44,6 @@ const handleLogin = async () => {
           <Text style={styles.subtitle}>Gestión inteligente para un futuro limpio</Text>
         </View>
 
-        {/* Formulario */}
         <View style={styles.formContainer}>
           <CustomInput 
             label="Correo Electrónico"
@@ -79,7 +75,6 @@ const handleLogin = async () => {
           />
         </View>
 
-        {/* Pie de página (Registro) */}
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>¿No tienes una cuenta de familia? </Text>
 <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
@@ -99,7 +94,7 @@ const styles = StyleSheet.create({
   logoCircle: {
     width: 100, height: 100,
     borderRadius: 50,
-    backgroundColor: '#ECFDF5', // Verde muy claro
+    backgroundColor: '#ECFDF5', 
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,

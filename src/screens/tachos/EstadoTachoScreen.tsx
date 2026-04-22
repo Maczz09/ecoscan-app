@@ -12,7 +12,6 @@ export const EstadoTachoScreen = () => {
   const { data, isLoading } = useTacho();
   const [menuVisible, setMenuVisible] = useState(false);
 
-  // Fecha dinámica real
   const fechaActual = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(new Date());
 
   if (isLoading) {
@@ -21,10 +20,8 @@ export const EstadoTachoScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* paddingBottom 100 es clave para que el contenido no quede oculto detrás de la barra inferior */}
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         
-        {/* HEADER */}
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuBtn}>
@@ -41,7 +38,6 @@ export const EstadoTachoScreen = () => {
           </View>
         </View>
 
-        {/* MÉTRICAS DE USUARIO (Tabla: usuarios y metricas_dashboard) */}
         <View style={styles.metricsRow}>
           <View style={styles.metricCard}>
             <MaterialCommunityIcons name="leaf" size={28} color="#10B981" />
@@ -55,7 +51,6 @@ export const EstadoTachoScreen = () => {
           </View>
         </View>
 
-        {/* TARJETA DEL TACHO */}
         <View style={styles.statusCard}>
           <View style={styles.statusHeader}>
             <View>
@@ -82,7 +77,6 @@ export const EstadoTachoScreen = () => {
 
       </ScrollView>
 
-      {/* CONTENEDOR DE BOTONES FLOTANTES */}
       <View style={styles.floatingBottom}>
         <TouchableOpacity style={styles.scanBtn} activeOpacity={0.8}>
           <MaterialCommunityIcons name="qrcode-scan" size={22} color="#FFF" />
@@ -126,7 +120,7 @@ const styles = StyleSheet.create({
 
   floatingBottom: {
     position: 'absolute',
-    bottom: 110, // Elevado para no tapar la barra de navegación (Tabs)
+    bottom: 110,
     left: 20,
     right: 20,
     flexDirection: 'row',

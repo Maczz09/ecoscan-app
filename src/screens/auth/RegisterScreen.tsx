@@ -6,23 +6,22 @@ import { useRouter } from 'expo-router';
 
 import { CustomInput } from '@/src/components/CustomInput';
 import { CustomButton } from '@/src/components/CustomButton';
-import { useRegister } from '@/src/hooks/useRegister'; // <-- Importamos nuestro hook
+import { useRegister } from '@/src/hooks/useRegister'; 
 
 export const RegisterScreen = () => {
   const router = useRouter();
-  const { register, isLoading } = useRegister(); // <-- Usamos el hook
+  const { register, isLoading } = useRegister(); 
   
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false); // Este estado se queda porque controla la vista
+  const [isSuccess, setIsSuccess] = useState(false); 
 
   const handleRegister = async () => {
     if (!nombre || !email || !password) {
       return Alert.alert('Error', 'Completa todos los campos obligatorios.');
     }
 
-    // Ejecutamos la lógica que ahora vive en el hook
     const result = await register(nombre, email, password);
     
     if (result.success) {
