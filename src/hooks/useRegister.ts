@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { Rol } from '../types/database';
 
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const register = async (nombre: string, email: string, password: string) => {
+  const register = async (nombre: string, email: string, password: string, rol: Rol) => {
     setIsLoading(true);
     
     return new Promise<{ success: boolean; message?: string }>((resolve) => {

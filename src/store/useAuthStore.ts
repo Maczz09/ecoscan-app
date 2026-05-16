@@ -2,11 +2,15 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { Rol } from '../types/database';
+
 // Tipado basado en la tabla 'usuarios'
 interface User {
   id_usuario: number;
   nombre: string;
   email: string;
+  rol: Rol;
+  id_grupo?: number;
 }
 
 interface AuthState {

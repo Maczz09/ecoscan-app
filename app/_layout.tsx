@@ -57,6 +57,8 @@ function RootLayoutNav() {
   <Stack.Screen name="perfil" options={{ headerShown: false }} />
   <Stack.Screen name="editar-perfil" options={{ headerShown: false }} />
   <Stack.Screen name="seguridad" options={{ headerShown: false }} />
+  <Stack.Screen name="ajustes-grupo" options={{ headerShown: false }} />
+  <Stack.Screen name="dashboard-grupal" options={{ headerShown: false }} />
   <Stack.Screen name="+not-found" />
 </Stack>
     </ThemeProvider>

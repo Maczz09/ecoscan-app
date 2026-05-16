@@ -12,21 +12,22 @@ export interface Notification {
 
 export type EstadoCuenta = 'PENDIENTE' | 'VERIFICADO' | 'BLOQUEADO';
 
-export interface Familia {
-  id_familia: number;
-  nombre_familia: string;
-  id_tacho_asignado: number | null;
-  puntos_grupales: number;
+export type Rol = 'USER' | 'ADMIN_GROUP' | 'ADMIN' | 'AUDITOR';
+
+export interface Grupo {
+  id_grupo: number;
+  nombre_grupo: string;
   fecha_creacion: string;
 }
 
 export interface Usuario {
   id_usuario: number;
-  id_familia: number | null;
   nombre: string;
   email: string;
   estado_cuenta: EstadoCuenta;
-  eco_puntos_personales: number;
+  rol: Rol;
+  id_rol?: number;
   fecha_registro: string;
-  familia?: Familia; // Optional relation
+  id_grupo?: number;
+  grupo?: Grupo; // Relación opcional
 }

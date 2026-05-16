@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: API de Servicio de Citas
+  version: 1.0.0
+paths:
+  /citas:
+    post:
+      summary: Reservar una nueva cita médica
+      description: Permite agendar una cita validando la disponibilidad del médico para evitar colisiones horarias.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idPaciente
+                - idMedico
+                - fechaHora
+                - especialidad
+              properties:
+                idPaciente:
+                  type: string
+                  example: PAC-78901
+                idMedico:
+                  type: string
+                  example: MED-102
+                fechaHora:
+                  type: string
+                  format: date-time
+                  example: "2026-05-15T10:00:00Z"
+                especialidad:
+                  type: string
+                  example: Cardiología
+      responses:
+        '201':
+          description: Cita reservada con éxito.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  idCita:
+                    type: string
+                    example: CIT-4059
+                  estado:
+                    type: string
+                    example: Pendiente
+                  mensaje:
+                    type: string
+                    example: Cita reservada con éxito. Pendiente de pago para confirmación.
+        '400':
+          description: Solicitud inválida (ej. formato de fecha incorrecto).
+        '409':
+          description: Conflicto de negocio (ej. el horario solicitado ya no se encuentra disponible).
+        '503':
+          description: Falla de dependencia externa (ej. no se pudo validar con el servicio de médicos).

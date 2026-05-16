@@ -7,10 +7,15 @@ import { LevelIndicator } from '@/src/components/LevelIndicator';
 import { NotificationBell } from '@/src/components/NotificationBell';
 import { ProfileButton } from '@/src/components/ProfileButton';
 import { SidebarMenu } from '@/src/components/SidebarMenu';
+import { useAuthStore } from '@/src/store/useAuthStore';
+import { useRouter } from 'expo-router';
 
 export const EstadoTachoScreen = () => {
+  const router = useRouter();
   const { data, isLoading } = useTacho();
   const [menuVisible, setMenuVisible] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const firstName = user?.nombre?.split(' ')[0] || 'Usuario';
 
   const fechaActual = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(new Date());
 
@@ -28,7 +33,7 @@ export const EstadoTachoScreen = () => {
               <MaterialCommunityIcons name="menu" size={28} color="#111827" />
             </TouchableOpacity>
             <View>
-              <Text style={styles.greeting}>Hola, Max 👋</Text>
+              <Text style={styles.greeting}>Hola, {firstName} 👋</Text>
               <Text style={styles.date}>Hoy, {fechaActual}</Text>
             </View>
           </View>
@@ -64,23 +69,26 @@ export const EstadoTachoScreen = () => {
 
           <View style={styles.divider} />
 
-          <LevelIndicator label="Plástico" percentage={data?.tacho.nivel_llenado_plastico || 0} color="#3B82F6" />
-          <LevelIndicator label="Papel" percentage={data?.tacho.nivel_llenado_papel || 0} color="#F59E0B" />
-          <LevelIndicator label="Orgánico" percentage={data?.tacho.nivel_llenado_organico || 0} color="#10B981" />
-          <LevelIndicator label="Vidrio" percentage={data?.tacho.nivel_llenado_vidrio || 0} color="#8B5CF6" />
-
-          <View style={styles.footerInfo}>
-            <MaterialCommunityIcons name="clock-outline" size={14} color="#9CA3AF" />
-            <Text style={styles.footerText}>Última actualización: {data?.tacho.ultima_conexion}</Text>
+          <View style={styles.levelsContainer}>
+            <LevelIndicator label="Plástico" percentage={data?.tacho.nivel_llenado_plastico || 0} color="#3B82F6" />
+            <LevelIndicator label="Papel" percentage={data?.tacho.nivel_llenado_papel || 0} color="#F59E0B" />
+            <LevelIndicator label="Vidrio" percentage={data?.tacho.nivel_llenado_vidrio || 0} color="#8B5CF6" />
           </View>
         </View>
 
       </ScrollView>
 
       <View style={styles.floatingBottom}>
-        <TouchableOpacity style={styles.scanBtn} activeOpacity={0.8}>
-          <MaterialCommunityIcons name="qrcode-scan" size={22} color="#FFF" />
-          <Text style={styles.scanBtnText}>Escanear Nuevo Tacho</Text>
+        {user?.rol === 'ADMIN_GROUP' && (
+          <TouchableOpacity style={[styles.scanBtn, styles.adminBtn]} activeOpacity={0.8} onPress={() => router.push('/crear-tacho')}>
+            <MaterialCommunityIcons name="plus-circle-outline" size={24} color="#10B981" />
+            <Text style={[styles.scanBtnText, styles.adminBtnText]}>Crear Nuevo Tacho</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity style={styles.scanBtn} activeOpacity={0.8} onPress={() => router.push('/vincular-tacho')}>
+          <MaterialCommunityIcons name="qrcode-scan" size={24} color="#FFF" />
+          <Text style={styles.scanBtnText}>Vincular Tacho</Text>
         </TouchableOpacity>
       </View>
 
@@ -90,46 +98,42 @@ export const EstadoTachoScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: '#F3F4F6' }, // Fondo un poco más gris para resaltar tarjetas blancas
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  menuBtn: { padding: 8, backgroundColor: '#F3F4F6', borderRadius: 12 },
-  greeting: { fontSize: 22, fontWeight: 'bold', color: '#111827' },
-  date: { fontSize: 13, color: '#6B7280', textTransform: 'capitalize' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
+  menuBtn: { padding: 10, backgroundColor: '#FFF', borderRadius: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  greeting: { fontSize: 24, fontWeight: '900', color: '#111827', letterSpacing: -0.5 },
+  date: { fontSize: 14, color: '#6B7280', textTransform: 'capitalize', fontWeight: '500', marginTop: 2 },
   actions: { flexDirection: 'row', gap: 12 },
-  iconBtn: { padding: 8, backgroundColor: '#FFF', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5 },
-  badge: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, backgroundColor: '#EF4444', borderRadius: 4, borderWidth: 1, borderColor: '#fff' },
   
-  metricsRow: { flexDirection: 'row', gap: 15, marginBottom: 20 },
-  metricCard: { flex: 1, backgroundColor: '#FFF', padding: 15, borderRadius: 20, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
-  metricValue: { fontSize: 22, fontWeight: '900', color: '#111827', marginTop: 8 },
-  metricLabel: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  metricsRow: { flexDirection: 'row', gap: 15, marginBottom: 25 },
+  metricCard: { flex: 1, backgroundColor: '#FFF', padding: 22, borderRadius: 24, alignItems: 'center', shadowColor: '#10B981', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 15, elevation: 5, borderWidth: 1, borderColor: '#F0FDF4' },
+  metricValue: { fontSize: 26, fontWeight: '900', color: '#111827', marginTop: 10 },
+  metricLabel: { fontSize: 13, color: '#6B7280', marginTop: 4, fontWeight: '600' },
 
-  statusCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3, marginBottom: 20 },
+  statusCard: { backgroundColor: '#FFF', borderRadius: 28, padding: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.08, shadowRadius: 20, elevation: 6, marginBottom: 20 },
   statusHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 },
-  tachoName: { fontSize: 18, fontWeight: 'bold', color: '#111827' },
-  tachoId: { fontSize: 12, color: '#9CA3AF' },
-  badgeStatus: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  tachoName: { fontSize: 20, fontWeight: '900', color: '#111827', letterSpacing: -0.5 },
+  tachoId: { fontSize: 13, color: '#9CA3AF', marginTop: 4, fontWeight: '500' },
+  badgeStatus: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   bgSuccess: { backgroundColor: '#D1FAE5' },
   bgWarn: { backgroundColor: '#FEF3C7' },
-  badgeText: { fontSize: 10, fontWeight: 'bold', color: '#065F46' },
-  divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 15 },
-  footerInfo: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 5 },
-  footerText: { fontSize: 12, color: '#9CA3AF' },
+  badgeText: { fontSize: 11, fontWeight: '800', color: '#065F46', letterSpacing: 0.5 },
+  divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 20 },
+  
+  levelsContainer: { gap: 8 }, // Espaciado entre niveles
 
   floatingBottom: {
     position: 'absolute',
-    bottom: 110,
+    bottom: 100,
     left: 20,
     right: 20,
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
+    gap: 12, // Espacio entre los botones
   },
   scanBtn: { 
-    flex: 1,
+    width: '100%',
     backgroundColor: '#111827', 
     flexDirection: 'row', 
     paddingHorizontal: 20, 
@@ -137,12 +141,21 @@ const styles = StyleSheet.create({
     borderRadius: 20, 
     alignItems: 'center', 
     justifyContent: 'center', 
-    gap: 10, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 6 }, 
+    gap: 12, 
+    shadowColor: '#111827', 
+    shadowOffset: { width: 0, height: 8 }, 
     shadowOpacity: 0.25, 
     shadowRadius: 12,
     elevation: 8,
   },
-  scanBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 }
+  scanBtnText: { color: '#FFF', fontWeight: '800', fontSize: 16, letterSpacing: 0.5 },
+  
+  adminBtn: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 2,
+    borderColor: '#10B981',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  adminBtnText: { color: '#065F46' }
 });
