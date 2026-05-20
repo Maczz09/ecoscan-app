@@ -2,6 +2,8 @@ import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
 const API_URL = 'http://192.168.100.2:8000/api';
+//const API_URL = 'https://fisionortumbes.com/api';
+
 
 export const api = axios.create({
   baseURL: API_URL,

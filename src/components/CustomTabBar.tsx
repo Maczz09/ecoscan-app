@@ -81,7 +81,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
           onPress={() => setShowMenu(false)}
         >
           {/* ✅ FIX: TouchableWithoutFeedback necesita un solo hijo directo */}
-          <TouchableWithoutFeedback onPress={() => {}}>
+          <TouchableWithoutFeedback onPress={() => { }}>
             <View style={styles.bottomSheet}>
               <View style={styles.sheetHandle} />
 
