@@ -106,13 +106,13 @@ export const PerfilScreen = () => {
             <MaterialCommunityIcons name="chevron-right" size={22} color="#D1D5DB" />
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.actionRow} activeOpacity={0.7} onPress={() => router.push('/historial')}>
             <MaterialCommunityIcons name="history" size={22} color="#6B7280" />
             <Text style={styles.actionText}>Historial de Reciclaje</Text>
             <MaterialCommunityIcons name="chevron-right" size={22} color="#D1D5DB" />
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.actionRow} activeOpacity={0.7} onPress={() => router.push('/mis-canjes')}>
             <MaterialCommunityIcons name="gift-outline" size={22} color="#6B7280" />
             <Text style={styles.actionText}>Mis Canjes</Text>
             <MaterialCommunityIcons name="chevron-right" size={22} color="#D1D5DB" />
