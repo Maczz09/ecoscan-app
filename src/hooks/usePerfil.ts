@@ -1,52 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Usuario } from '@/src/types/database';
-
-const MOCK_USER: Usuario = {
-  id_usuario: 1,
-  id_familia: 1,
-  nombre: 'Maximiliano',
-  email: 'max@ecoscan.com',
-  estado_cuenta: 'VERIFICADO',
-  eco_puntos_personales: 1250,
-  fecha_registro: new Date('2025-01-15T10:00:00Z').toISOString(),
-  familia: {
-    id_familia: 1,
-    nombre_familia: 'Familia Eco',
-    id_tacho_asignado: 101,
-    puntos_grupales: 3400,
-    fecha_creacion: new Date('2025-01-10T10:00:00Z').toISOString(),
-  }
-};
+import api from '@/src/services/api';
+import { useAuthStore } from '@/src/store/useAuthStore';
+import { usePointsStore } from '@/src/store/usePointsStore';
+import { useRouter } from 'expo-router';
 
 export const usePerfil = () => {
   const [user, setUser] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const authLogout = useAuthStore(state => state.logout);
+  const setGlobalPoints = usePointsStore(state => state.setPuntos);
+  const router = useRouter();
+
+  const fetchUser = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/v1/user-profile');
+      
+      if (response.data.status === 'success') {
+        const userData = response.data.data;
+        setUser(userData);
+        
+        // Sincronizar puntos globales
+        if (userData.eco_puntos_personales !== undefined) {
+          setGlobalPoints(userData.eco_puntos_personales);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setGlobalPoints]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        // Simulando llamada a la API
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setUser(MOCK_USER);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUser();
-  }, []);
+  }, [fetchUser]);
 
   const logout = async () => {
-    // Aquí irá la lógica de cerrar sesión, borrar tokens, etc.
-    console.log('Cerrando sesión...');
+    try {
+      // Opcional: Llamar al endpoint de logout si existe
+      // await api.post('/v1/logout');
+      
+      // Limpiar estados globales
+      authLogout();
+      setGlobalPoints(0);
+      
+      console.log('Sesión cerrada');
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      // Forzamos cierre local de todos modos
+      authLogout();
+      router.replace('/(auth)/login');
+    }
   };
 
   return {
     user,
     loading,
-    logout
+    logout,
+    refreshProfile: fetchUser
   };
 };

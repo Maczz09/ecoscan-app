@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/src/store/useAuthStore'; 
 import { Rol } from '@/src/types/database';
+import api from '../services/api';
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,51 +10,31 @@ export const useAuth = () => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    return new Promise<{ success: boolean; message?: string }>((resolve) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        
-        if (email === 'admin@ecoscan.com' && password === '123456') {
-          // MOCK: Usuario con rol ADMIN_GROUP y asignado al grupo 100
-          const mockUser = { 
-            id_usuario: 1, 
-            nombre: 'Max Garcia', 
-            email: 'admin@ecoscan.com',
-            rol: 'ADMIN_GROUP' as Rol,
-            id_grupo: 100
-          };
-          setAuth(mockUser, 'tokentest_admin');
-          resolve({ success: true });
-          
-        } else if (email === 'user@ecoscan.com' && password === '123456') {
-          // MOCK: Usuario con rol USER y asignado al grupo 100
-          const mockUser = { 
-            id_usuario: 2, 
-            nombre: 'Ana Lopez', 
-            email: 'user@ecoscan.com',
-            rol: 'USER' as Rol,
-            id_grupo: 100
-          };
-          setAuth(mockUser, 'tokentest_user');
-          resolve({ success: true });
+    try {
+      const response = await api.post('/v1/login', { email, password });
+      
+      const userData = response.data.data;
+      
+      const user = {
+        id_usuario: userData.user_id,
+        nombre: userData.nombre,
+        email: userData.email,
+        rol: userData.rol as Rol,
+        id_grupo: undefined
+      };
 
-        } else if (email === 'nuevo@ecoscan.com' && password === '123456') {
-          // MOCK: Usuario con rol USER pero SIN GRUPO asignado
-          const mockUser = { 
-            id_usuario: 3, 
-            nombre: 'Carlos Ruiz', 
-            email: 'nuevo@ecoscan.com',
-            rol: 'USER' as Rol,
-            id_grupo: undefined
-          };
-          setAuth(mockUser, 'tokentest_nuevo');
-          resolve({ success: true });
-
-        } else {
-          resolve({ success: false, message: 'Credenciales incorrectas. Prueba con admin@ecoscan.com, user@ecoscan.com o nuevo@ecoscan.com (clave: 123456)' });
-        }
-      }, 1500);
-    });
+      setAuth(user, userData.token);
+      setIsLoading(false);
+      return { success: true };
+      
+    } catch (error: any) {
+      setIsLoading(false);
+      let errorMessage = 'Credenciales incorrectas.';
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.message || errorMessage;
+      }
+      return { success: false, message: errorMessage };
+    }
   };
 
   return { login, isLoading };

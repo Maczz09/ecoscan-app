@@ -1,23 +1,37 @@
 import { useState } from 'react';
 import { Rol } from '../types/database';
+import api from '../services/api';
 
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const register = async (nombre: string, email: string, password: string, rol: Rol) => {
     setIsLoading(true);
-    
-    return new Promise<{ success: boolean; message?: string }>((resolve) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        
-        if (email === 'admin@ecoscan.com') {
-          resolve({ success: false, message: 'Este correo ya está registrado en la base de datos.' });
-        } else {
-          resolve({ success: true });
-        }
-      }, 1500);
-    });
+
+    try {
+      const id_rol = rol === 'USER' ? 1 : 2;
+
+      const response = await api.post('/v1/register', {
+        nombre,
+        email,
+        password,
+        id_rol
+      });
+
+      setIsLoading(false);
+      return { success: true, message: response.data.message };
+
+    } catch (error: any) {
+      setIsLoading(false);
+
+      let errorMessage = 'Ocurrió un error al intentar registrarse.';
+
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.message || errorMessage;
+      }
+
+      return { success: false, message: errorMessage };
+    }
   };
 
   return { register, isLoading };

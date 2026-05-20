@@ -56,25 +56,38 @@ export const EstadoTachoScreen = () => {
           </View>
         </View>
 
-        <View style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <View>
-              <Text style={styles.tachoName}>Tacho Principal</Text>
-              <Text style={styles.tachoId}>ID: {data?.tacho.codigo_qr}</Text>
+        {data?.tacho ? (
+          <View style={styles.statusCard}>
+            <View style={styles.statusHeader}>
+              <View>
+                <Text style={styles.tachoName}>Tacho Principal</Text>
+                <Text style={styles.tachoId}>ID: {data.tacho.codigo_qr}</Text>
+              </View>
+              <View style={[styles.badgeStatus, data.tacho.estado_operativo === 'ACTIVO' ? styles.bgSuccess : styles.bgWarn]}>
+                <Text style={styles.badgeText}>{data.tacho.estado_operativo}</Text>
+              </View>
             </View>
-            <View style={[styles.badgeStatus, data?.tacho.estado_operativo === 'ACTIVO' ? styles.bgSuccess : styles.bgWarn]}>
-              <Text style={styles.badgeText}>{data?.tacho.estado_operativo}</Text>
+
+            <View style={styles.divider} />
+
+            <View style={styles.levelsContainer}>
+              <LevelIndicator label="Plástico" percentage={data.tacho.nivel_llenado_plastico || 0} color="#3B82F6" />
+              <LevelIndicator label="Papel/Cartón" percentage={data.tacho.nivel_llenado_papel || 0} color="#F59E0B" />
+              <LevelIndicator label="Vidrio" percentage={data.tacho.nivel_llenado_vidrio || 0} color="#8B5CF6" />
+              {data.tacho.nivel_llenado_organico > 0 && (
+                <LevelIndicator label="Orgánico" percentage={data.tacho.nivel_llenado_organico} color="#10B981" />
+              )}
             </View>
           </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.levelsContainer}>
-            <LevelIndicator label="Plástico" percentage={data?.tacho.nivel_llenado_plastico || 0} color="#3B82F6" />
-            <LevelIndicator label="Papel" percentage={data?.tacho.nivel_llenado_papel || 0} color="#F59E0B" />
-            <LevelIndicator label="Vidrio" percentage={data?.tacho.nivel_llenado_vidrio || 0} color="#8B5CF6" />
+        ) : (
+          <View style={[styles.statusCard, { alignItems: 'center', paddingVertical: 40 }]}>
+            <MaterialCommunityIcons name="trash-can-outline" size={64} color="#D1D5DB" />
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginTop: 16 }}>Sin tacho vinculado</Text>
+            <Text style={{ fontSize: 14, color: '#6B7280', textAlign: 'center', marginTop: 8, paddingHorizontal: 20 }}>
+              Aún no tienes un tacho asociado a tu cuenta. ¡Vincula uno para empezar a medir tu impacto real!
+            </Text>
           </View>
-        </View>
+        )}
 
       </ScrollView>
 

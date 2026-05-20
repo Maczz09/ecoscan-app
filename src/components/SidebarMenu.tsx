@@ -62,12 +62,12 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
   // Lo correcto sería manejar el cierre en un estado interno, pero para simplificar dejamos return null si no está visible.
   // Wait, si hacemos return null, corta la animación de salida. Quitaré el return null si es posible,
   // O podemos modificar Modal para que use el `visible` original.
-  
+
   const navigateTo = (path: string) => {
     onClose();
     setTimeout(() => {
       router.push(path as any);
-    }, 250);
+    }, 50);
   };
 
   const isActive = (path: string) => pathname === path;
@@ -85,7 +85,7 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
 
         <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
           <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-            
+
             {/* BRAND HEADER */}
             <View style={styles.brandContainer}>
               <MaterialCommunityIcons name="leaf-circle" size={34} color="#10B981" />
@@ -112,33 +112,33 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
 
             {/* RUTAS DEL MENU */}
             <View style={styles.menuItems}>
-              
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/(tabs)') && styles.menuItemActive]} 
+
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/(tabs)') && styles.menuItemActive]}
                 onPress={() => navigateTo('/(tabs)')}
               >
                 <MaterialCommunityIcons name="home-outline" size={26} color={isActive('/(tabs)') ? "#10B981" : "#6B7280"} />
                 <Text style={[styles.menuText, isActive('/(tabs)') && styles.menuTextActive]}>Inicio (Tachos)</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/dashboard') && styles.menuItemActive]} 
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/dashboard') && styles.menuItemActive]}
                 onPress={() => navigateTo('/dashboard')}
               >
                 <MaterialCommunityIcons name="chart-box-outline" size={26} color={isActive('/dashboard') ? "#10B981" : "#6B7280"} />
                 <Text style={[styles.menuText, isActive('/dashboard') && styles.menuTextActive]}>Dashboard Personal</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/canjes') && styles.menuItemActive]} 
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/canjes') && styles.menuItemActive]}
                 onPress={() => navigateTo('/canjes')}
               >
                 <MaterialCommunityIcons name="gift-outline" size={26} color={isActive('/canjes') ? "#10B981" : "#6B7280"} />
                 <Text style={[styles.menuText, isActive('/canjes') && styles.menuTextActive]}>Recompensas</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/mis-canjes') && styles.menuItemActive]} 
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/mis-canjes') && styles.menuItemActive]}
                 onPress={() => navigateTo('/mis-canjes')}
               >
                 <MaterialCommunityIcons name="ticket-percent-outline" size={26} color={isActive('/mis-canjes') ? "#10B981" : "#6B7280"} />
@@ -146,8 +146,8 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
               </TouchableOpacity>
 
               {user?.rol !== 'USER' && (
-                <TouchableOpacity 
-                  style={[styles.menuItem, isActive('/migrupo') && styles.menuItemActive]} 
+                <TouchableOpacity
+                  style={[styles.menuItem, isActive('/migrupo') && styles.menuItemActive]}
                   onPress={() => navigateTo('/migrupo')}
                 >
                   <MaterialCommunityIcons name="account-group-outline" size={26} color={isActive('/migrupo') ? "#10B981" : "#6B7280"} />
@@ -155,8 +155,8 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
                 </TouchableOpacity>
               )}
 
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/dashboard-grupal') && styles.menuItemActive]} 
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/dashboard-grupal') && styles.menuItemActive]}
                 onPress={() => navigateTo('/dashboard-grupal')}
               >
                 <MaterialCommunityIcons name="chart-box-multiple-outline" size={26} color={isActive('/dashboard-grupal') ? "#10B981" : "#6B7280"} />
@@ -165,16 +165,16 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
 
               <View style={styles.divider} />
 
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/perfil') && styles.menuItemActive]} 
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/perfil') && styles.menuItemActive]}
                 onPress={() => navigateTo('/perfil')}
               >
                 <MaterialCommunityIcons name="account-cog-outline" size={26} color={isActive('/perfil') ? "#10B981" : "#6B7280"} />
                 <Text style={[styles.menuText, isActive('/perfil') && styles.menuTextActive]}>Mi Perfil</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.menuItem, isActive('/notificaciones') && styles.menuItemActive]} 
+              <TouchableOpacity
+                style={[styles.menuItem, isActive('/notificaciones') && styles.menuItemActive]}
                 onPress={() => navigateTo('/notificaciones')}
               >
                 <MaterialCommunityIcons name="bell-outline" size={26} color={isActive('/notificaciones') ? "#10B981" : "#6B7280"} />
@@ -185,14 +185,14 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
 
             {/* FOOTER DEL MENU */}
             <View style={styles.footer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.logoutBtn}
                 onPress={() => {
                   logout();
                   onClose();
                   setTimeout(() => {
                     router.replace('/(auth)/login');
-                  }, 250);
+                  }, 10);
                 }}
               >
                 <View style={styles.logoutIconBox}>
@@ -212,9 +212,9 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
 const styles = StyleSheet.create({
   overlay: { flex: 1, flexDirection: 'row' },
   backgroundDimmer: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  drawer: { 
-    width: width * 0.82, 
-    backgroundColor: '#FFFFFF', 
+  drawer: {
+    width: width * 0.82,
+    backgroundColor: '#FFFFFF',
     height: '100%',
     borderTopRightRadius: 35,
     borderBottomRightRadius: 35,
@@ -222,15 +222,15 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 10, height: 0 }, shadowOpacity: 0.15, shadowRadius: 30, elevation: 25
   },
   safeArea: { flex: 1 },
-  
+
   brandContainer: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 25, paddingTop: Platform.OS === 'android' ? 40 : 20, paddingBottom: 20 },
   brandText: { fontSize: 26, fontWeight: '900', color: '#111827', letterSpacing: -0.5 },
 
-  profileCard: { 
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', 
-    backgroundColor: '#111827', 
-    marginHorizontal: 20, 
-    padding: 18, 
+  profileCard: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: '#111827',
+    marginHorizontal: 20,
+    padding: 18,
     borderRadius: 24,
     shadowColor: '#10B981', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 15, elevation: 8,
     marginBottom: 10
@@ -243,13 +243,13 @@ const styles = StyleSheet.create({
   closeBtn: { padding: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14 },
 
   divider: { height: 1, backgroundColor: '#F3F4F6', marginHorizontal: 25, marginVertical: 10 },
-  
+
   menuItems: { flex: 1, paddingHorizontal: 15, marginTop: 5 },
   menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 18, borderRadius: 20, marginBottom: 8, gap: 15 },
   menuItemActive: { backgroundColor: '#ECFDF5', shadowColor: '#10B981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
   menuText: { fontSize: 16, fontWeight: '600', color: '#6B7280' },
   menuTextActive: { color: '#065F46', fontWeight: '900', letterSpacing: 0.5 },
-  
+
   footer: { padding: 20, borderTopWidth: 1, borderTopColor: '#F3F4F6', marginBottom: Platform.OS === 'ios' ? 0 : 15 },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 16 },
   logoutIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' },

@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import api from '@/src/services/api';
+import { usePointsStore } from '@/src/store/usePointsStore';
 
 export interface DashboardData {
   tacho: {
@@ -9,7 +11,7 @@ export interface DashboardData {
     nivel_llenado_organico: number;
     nivel_llenado_vidrio: number;
     ultima_conexion: string;
-  };
+  } | null;
   metricas: {
     eco_puntos_personales: number; 
     racha_dias_activos: number;    
@@ -19,28 +21,33 @@ export interface DashboardData {
 export const useTacho = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const setGlobalPoints = usePointsStore(state => state.setPuntos);
+
+  const fetchTachoStatus = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/v1/tacho/status');
+      
+      if (response.data.status === 'success') {
+        const tachoData = response.data.data;
+        setData(tachoData);
+        
+        if (tachoData.metricas?.eco_puntos_personales !== undefined) {
+          setGlobalPoints(tachoData.metricas.eco_puntos_personales);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching tacho status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setGlobalPoints]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setData({
-        tacho: {
-          codigo_qr: 'ECO-9922-XP',
-          estado_operativo: 'ACTIVO',
-          nivel_llenado_plastico: 85,
-          nivel_llenado_papel: 40,
-          nivel_llenado_organico: 15,
-          nivel_llenado_vidrio: 60,
-          ultima_conexion: 'Hace 5 min'
-        },
-        metricas: {
-          eco_puntos_personales: 1250,
-          racha_dias_activos: 14
-        }
-      });
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    fetchTachoStatus();
+  }, [fetchTachoStatus]);
 
-  return { data, isLoading };
+  return { data, isLoading, refetch: fetchTachoStatus };
 };
 

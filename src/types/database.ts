@@ -20,6 +20,14 @@ export interface Grupo {
   fecha_creacion: string;
 }
 
+export interface Familia {
+  id_familia: number;
+  nombre_familia: string;
+  id_tacho_asignado: number;
+  puntos_grupales: number;
+  fecha_creacion: string;
+}
+
 export interface Usuario {
   id_usuario: number;
   nombre: string;
@@ -28,6 +36,9 @@ export interface Usuario {
   rol: Rol;
   id_rol?: number;
   fecha_registro: string;
+  eco_puntos_personales?: number;
   id_grupo?: number;
   grupo?: Grupo; // Relación opcional
+  id_familia?: number;
+  familia?: Familia;
 }
