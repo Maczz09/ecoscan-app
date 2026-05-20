@@ -1,22 +1,59 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePerfil } from '@/src/hooks/usePerfil';
+import api from '@/src/services/api';
 
 export const EditarPerfilScreen = () => {
   const router = useRouter();
-  const { user } = usePerfil();
+  const { user, loading, refreshProfile } = usePerfil();
 
-  const [nombre, setNombre] = useState(user?.nombre || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleSave = () => {
-    // Aquí iría la lógica para enviar al backend (ej. PUT /api/usuarios/me)
-    // Mostramos el modal de éxito
-    setShowSuccess(true);
+  // Inicializar los campos cuando la información del perfil esté cargada
+  useEffect(() => {
+    if (user) {
+      setNombre(user.nombre || '');
+      setEmail(user.email || '');
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!nombre.trim()) {
+      Alert.alert('Error', 'El nombre no puede estar vacío.');
+      return;
+    }
+    if (!email.trim()) {
+      Alert.alert('Error', 'El correo electrónico no puede estar vacío.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const response = await api.put('/v1/user-profile', {
+        nombre: nombre.trim(),
+        email: email.trim(),
+      });
+
+      if (response.data.status === 'success') {
+        // Refrescar el perfil globalmente para actualizar pantallas y tiendas
+        await refreshProfile();
+        setShowSuccess(true);
+      } else {
+        Alert.alert('Error', response.data.message || 'No se pudo actualizar el perfil.');
+      }
+    } catch (error: any) {
+      console.error('Error al guardar el perfil:', error);
+      const errorMsg = error.response?.data?.message || 'Ocurrió un error al guardar los cambios.';
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSuccessAccept = () => {
@@ -24,11 +61,30 @@ export const EditarPerfilScreen = () => {
     router.back();
   };
 
+  if (loading && !user) {
+    return (
+      <SafeAreaView style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#10B981" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!user && !loading) {
+    return (
+      <SafeAreaView style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>No se pudo cargar la información del usuario.</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Volver</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()} disabled={saving}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#1F2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Editar Perfil</Text>
@@ -40,17 +96,6 @@ export const EditarPerfilScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* FOTO DE PERFIL (MOCK) */}
-          <View style={styles.avatarSection}>
-            <View style={styles.avatarContainer}>
-              <MaterialCommunityIcons name="account" size={50} color="#10B981" />
-              <TouchableOpacity style={styles.editAvatarBtn}>
-                <MaterialCommunityIcons name="camera-plus" size={16} color="#FFF" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.avatarHint}>Cambiar foto de perfil</Text>
-          </View>
-
           {/* FORMULARIO */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>Nombre completo</Text>
@@ -62,6 +107,7 @@ export const EditarPerfilScreen = () => {
                 onChangeText={setNombre}
                 placeholder="Ingresa tu nombre"
                 placeholderTextColor="#9CA3AF"
+                editable={!saving}
               />
             </View>
           </View>
@@ -78,6 +124,7 @@ export const EditarPerfilScreen = () => {
                 placeholderTextColor="#9CA3AF"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!saving}
               />
             </View>
           </View>
@@ -86,8 +133,17 @@ export const EditarPerfilScreen = () => {
 
       {/* BOTÓN GUARDAR (Fijo abajo) */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.8}>
-          <Text style={styles.saveBtnText}>Guardar Cambios</Text>
+        <TouchableOpacity 
+          style={[styles.saveBtn, saving && { opacity: 0.7 }]} 
+          onPress={handleSave} 
+          activeOpacity={0.8}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Text style={styles.saveBtnText}>Guardar Cambios</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -112,6 +168,10 @@ export const EditarPerfilScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
+  center: { justifyContent: 'center', alignItems: 'center' },
+  errorText: { color: '#EF4444', fontSize: 16, marginBottom: 16 },
+  backButton: { backgroundColor: '#10B981', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
+  backButtonText: { color: '#FFF', fontWeight: 'bold' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
