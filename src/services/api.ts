@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
-// URL temporal, se cambiará cuando se suba a CPanel o se tenga la IP local de Laravel
-const API_URL = 'http://localhost:8000/api'; 
+// URL para la API en entorno de desarrollo usando la IP local de la PC
+const API_URL = 'http://192.168.100.5:8000/api/v1'; 
 
 export const api = axios.create({
   baseURL: API_URL,

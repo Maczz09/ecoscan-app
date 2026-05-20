@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,11 +9,6 @@ export const VincularTachoScreen = () => {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  
-  // Modal PIN
-  const [pinVisible, setPinVisible] = useState(false);
-  const [tachoId, setTachoId] = useState('');
-  const [pin, setPin] = useState('');
 
   if (!permission) {
     return <View />;
@@ -23,7 +18,7 @@ export const VincularTachoScreen = () => {
     return (
       <SafeAreaView style={[styles.container, styles.center]}>
         <MaterialCommunityIcons name="camera-off" size={64} color="#9CA3AF" />
-        <Text style={styles.permissionText}>Necesitamos permiso para usar tu cámara y escanear el QR del tacho.</Text>
+        <Text style={styles.permissionText}>Necesitamos permiso para usar tu cámara y escanear el QR del tacho para reciclar.</Text>
         <TouchableOpacity style={styles.btnPrimary} onPress={requestPermission}>
           <Text style={styles.btnPrimaryText}>Otorgar Permiso</Text>
         </TouchableOpacity>
@@ -36,28 +31,13 @@ export const VincularTachoScreen = () => {
 
   const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
     setScanned(true);
-    setTachoId(data); // El QR debería contener el ID del tacho
-    setPinVisible(true);
-  };
-
-  const handleVincular = () => {
-    if (pin.length !== 6) {
-      Alert.alert('Error', 'El PIN debe tener 6 dígitos.');
-      return;
-    }
-
-    // MOCK VALIDATION
-    if (pin === '123456') {
-      setPinVisible(false);
-      Alert.alert(
-        '¡Tacho Vinculado!',
-        `El tacho ${tachoId} se ha vinculado a tu grupo exitosamente.`,
-        [{ text: 'Aceptar', onPress: () => router.back() }]
-      );
-    } else {
-      Alert.alert('PIN Incorrecto', 'El PIN ingresado no coincide con el de este tacho.');
-      setPin('');
-    }
+    
+    // Simulate successful linkage for recycling
+    Alert.alert(
+      '¡Conectado exitosamente!',
+      `Te has vinculado al tacho: ${data}. \n\nDeposita tus residuos ahora para ganar Eco Puntos.`,
+      [{ text: '¡A Reciclar!', onPress: () => router.back() }]
+    );
   };
 
   return (
@@ -66,7 +46,7 @@ export const VincularTachoScreen = () => {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Vincular Tacho</Text>
+        <Text style={styles.headerTitle}>Escanea para Reciclar</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -81,42 +61,10 @@ export const VincularTachoScreen = () => {
         >
           <View style={styles.overlay}>
             <View style={styles.scanArea} />
-            <Text style={styles.instructionText}>Apunta la cámara al código QR de tu Tacho EcoScan</Text>
+            <Text style={styles.instructionText}>Apunta la cámara al código QR del Tacho EcoScan para iniciar tu sesión de reciclaje</Text>
           </View>
         </CameraView>
       </View>
-
-      {/* MODAL PIN */}
-      <Modal visible={pinVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <MaterialCommunityIcons name="lock-outline" size={48} color="#10B981" />
-            <Text style={styles.modalTitle}>Tacho Detectado</Text>
-            <Text style={styles.modalSubtitle}>Código: {tachoId}</Text>
-            
-            <Text style={styles.pinLabel}>Ingresa el PIN de seguridad (6 dígitos)</Text>
-            <TextInput
-              style={styles.pinInput}
-              keyboardType="number-pad"
-              maxLength={6}
-              secureTextEntry
-              value={pin}
-              onChangeText={setPin}
-              placeholder="••••••"
-              placeholderTextColor="#9CA3AF"
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.btnCancel} onPress={() => { setPinVisible(false); setScanned(false); setPin(''); }}>
-                <Text style={styles.btnCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnConfirm} onPress={handleVincular}>
-                <Text style={styles.btnConfirmText}>Vincular</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -127,7 +75,7 @@ const styles = StyleSheet.create({
   
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#000' },
   backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#1F2937', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
+  headerTitle: { fontSize: 18, fontWeight: '900', color: '#FFF' },
 
   permissionText: { color: '#FFF', textAlign: 'center', marginVertical: 20, fontSize: 16, lineHeight: 24 },
   btnPrimary: { backgroundColor: '#10B981', paddingVertical: 15, paddingHorizontal: 30, borderRadius: 16, marginBottom: 15 },
@@ -140,18 +88,4 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
   scanArea: { width: 250, height: 250, borderWidth: 2, borderColor: '#10B981', borderRadius: 20, backgroundColor: 'transparent' },
   instructionText: { color: '#FFF', fontSize: 16, fontWeight: '600', marginTop: 30, textAlign: 'center', paddingHorizontal: 40 },
-
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  modalCard: { backgroundColor: '#FFF', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 30, alignItems: 'center' },
-  modalTitle: { fontSize: 24, fontWeight: '900', color: '#111827', marginTop: 10 },
-  modalSubtitle: { fontSize: 15, color: '#6B7280', fontWeight: '500', marginBottom: 25 },
-  
-  pinLabel: { fontSize: 14, color: '#111827', fontWeight: 'bold', alignSelf: 'flex-start', marginBottom: 8 },
-  pinInput: { width: '100%', backgroundColor: '#F3F4F6', borderRadius: 16, padding: 20, fontSize: 24, fontWeight: 'bold', letterSpacing: 8, textAlign: 'center', color: '#111827', marginBottom: 30 },
-  
-  modalActions: { flexDirection: 'row', gap: 15 },
-  btnCancel: { flex: 1, backgroundColor: '#F3F4F6', paddingVertical: 18, borderRadius: 16, alignItems: 'center' },
-  btnCancelText: { color: '#6B7280', fontSize: 16, fontWeight: 'bold' },
-  btnConfirm: { flex: 1, backgroundColor: '#111827', paddingVertical: 18, borderRadius: 16, alignItems: 'center' },
-  btnConfirmText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
 });

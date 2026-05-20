@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/src/store/useAuthStore'; 
 import { Rol } from '@/src/types/database';
+import { api } from '../services/api';
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,51 +10,46 @@ export const useAuth = () => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    return new Promise<{ success: boolean; message?: string }>((resolve) => {
-      setTimeout(() => {
-        setIsLoading(false);
+    try {
+      const response = await api.post('/login', { email, password });
+      setIsLoading(false);
+
+      if (response.data.status === 'success') {
+        const { user_id, nombre, rol, token } = response.data.data;
         
-        if (email === 'admin@ecoscan.com' && password === '123456') {
-          // MOCK: Usuario con rol ADMIN_GROUP y asignado al grupo 100
-          const mockUser = { 
-            id_usuario: 1, 
-            nombre: 'Max Garcia', 
-            email: 'admin@ecoscan.com',
-            rol: 'ADMIN_GROUP' as Rol,
-            id_grupo: 100
-          };
-          setAuth(mockUser, 'tokentest_admin');
-          resolve({ success: true });
-          
-        } else if (email === 'user@ecoscan.com' && password === '123456') {
-          // MOCK: Usuario con rol USER y asignado al grupo 100
-          const mockUser = { 
-            id_usuario: 2, 
-            nombre: 'Ana Lopez', 
-            email: 'user@ecoscan.com',
-            rol: 'USER' as Rol,
-            id_grupo: 100
-          };
-          setAuth(mockUser, 'tokentest_user');
-          resolve({ success: true });
+        // Mapeamos el rol 'ADMIN' del backend de Laravel al rol 'ADMIN_GROUP'
+        // que maneja nuestro frontend para mantener la compatibilidad con todas las pantallas de tachos
+        const mappedRol: Rol = rol === 'ADMIN' ? 'ADMIN_GROUP' : (rol as Rol);
 
-        } else if (email === 'nuevo@ecoscan.com' && password === '123456') {
-          // MOCK: Usuario con rol USER pero SIN GRUPO asignado
-          const mockUser = { 
-            id_usuario: 3, 
-            nombre: 'Carlos Ruiz', 
-            email: 'nuevo@ecoscan.com',
-            rol: 'USER' as Rol,
-            id_grupo: undefined
-          };
-          setAuth(mockUser, 'tokentest_nuevo');
-          resolve({ success: true });
+        // Guardamos los datos de autenticación reales en Zustand
+        setAuth({
+          id_usuario: user_id,
+          nombre,
+          email,
+          rol: mappedRol,
+          id_grupo: 100 // Simulación del grupo de tachos para el flujo actual
+        }, token);
 
-        } else {
-          resolve({ success: false, message: 'Credenciales incorrectas. Prueba con admin@ecoscan.com, user@ecoscan.com o nuevo@ecoscan.com (clave: 123456)' });
+        return { success: true };
+      } else {
+        return { success: false, message: response.data.message || 'Error de autenticación.' };
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      
+      let errorMessage = 'Credenciales incorrectas o error al intentar conectar con el servidor.';
+      
+      if (err.response) {
+        const data = err.response.data;
+        if (data.message) {
+          errorMessage = data.message;
         }
-      }, 1500);
-    });
+      } else if (err.request) {
+        errorMessage = 'No se pudo conectar con el servidor. Verifica que tu backend esté encendido y configurado en la misma red Wi-Fi.';
+      }
+
+      return { success: false, message: errorMessage };
+    }
   };
 
   return { login, isLoading };

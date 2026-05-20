@@ -23,7 +23,7 @@ export const CrearTachoScreen = () => {
     return (
       <SafeAreaView style={[styles.container, styles.center]}>
         <MaterialCommunityIcons name="camera-off" size={64} color="#9CA3AF" />
-        <Text style={styles.permissionText}>Necesitamos permiso para usar tu cámara y registrar el QR del tacho físico.</Text>
+        <Text style={styles.permissionText}>Necesitamos permiso para usar tu cámara y escanear el QR del tacho físico.</Text>
         <TouchableOpacity style={styles.btnPrimary} onPress={requestPermission}>
           <Text style={styles.btnPrimaryText}>Otorgar Permiso</Text>
         </TouchableOpacity>
@@ -40,7 +40,7 @@ export const CrearTachoScreen = () => {
     setPinVisible(true);
   };
 
-  const handleRegistrar = () => {
+  const handleVincularAlGrupo = () => {
     if (pin.length !== 6) {
       Alert.alert('Error', 'El PIN debe tener 6 dígitos.');
       return;
@@ -49,12 +49,12 @@ export const CrearTachoScreen = () => {
     if (pin === '123456') {
       setPinVisible(false);
       Alert.alert(
-        '¡Tacho Registrado!',
-        `El tacho ${tachoId} se ha agregado exitosamente a tu grupo. Ahora los usuarios podrán reciclar en él.`,
-        [{ text: 'Aceptar', onPress: () => router.back() }]
+        '¡Tacho Añadido al Grupo!',
+        `El contenedor ${tachoId} se ha registrado y vinculado a tu grupo exitosamente.`,
+        [{ text: 'Excelente', onPress: () => router.back() }]
       );
     } else {
-      Alert.alert('PIN Incorrecto', 'El PIN de seguridad no coincide con la base de datos de hardware.');
+      Alert.alert('PIN Incorrecto', 'El PIN ingresado no coincide con el del fabricante.');
       setPin('');
     }
   };
@@ -65,7 +65,7 @@ export const CrearTachoScreen = () => {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Registrar Tacho a Grupo</Text>
+        <Text style={styles.headerTitle}>Registrar Tacho en Grupo</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -80,7 +80,7 @@ export const CrearTachoScreen = () => {
         >
           <View style={styles.overlay}>
             <View style={styles.scanArea} />
-            <Text style={styles.instructionText}>Apunta la cámara al código QR impreso en el contenedor inteligente.</Text>
+            <Text style={styles.instructionText}>Apunta la cámara al código QR del Tacho Físico para añadirlo a tu Grupo</Text>
           </View>
         </CameraView>
       </View>
@@ -90,10 +90,10 @@ export const CrearTachoScreen = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <MaterialCommunityIcons name="shield-check" size={48} color="#10B981" />
-            <Text style={styles.modalTitle}>Validación de Hardware</Text>
-            <Text style={styles.modalSubtitle}>Hardware Detectado: {tachoId}</Text>
+            <Text style={styles.modalTitle}>Hardware Detectado</Text>
+            <Text style={styles.modalSubtitle}>Código: {tachoId}</Text>
             
-            <Text style={styles.pinLabel}>Ingresa el PIN de seguridad de fábrica (6 dígitos)</Text>
+            <Text style={styles.pinLabel}>Ingresa el PIN de seguridad del fabricante (6 dígitos)</Text>
             <TextInput
               style={styles.pinInput}
               keyboardType="number-pad"
@@ -109,7 +109,7 @@ export const CrearTachoScreen = () => {
               <TouchableOpacity style={styles.btnCancel} onPress={() => { setPinVisible(false); setScanned(false); setPin(''); }}>
                 <Text style={styles.btnCancelText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.btnConfirm} onPress={handleRegistrar}>
+              <TouchableOpacity style={styles.btnConfirm} onPress={handleVincularAlGrupo}>
                 <Text style={styles.btnConfirmText}>Registrar</Text>
               </TouchableOpacity>
             </View>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#000' },
   backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#1F2937', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
+  headerTitle: { fontSize: 18, fontWeight: '900', color: '#FFF' },
 
   permissionText: { color: '#FFF', textAlign: 'center', marginVertical: 20, fontSize: 16, lineHeight: 24 },
   btnPrimary: { backgroundColor: '#10B981', paddingVertical: 15, paddingHorizontal: 30, borderRadius: 16, marginBottom: 15 },

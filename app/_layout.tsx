@@ -59,6 +59,10 @@ function RootLayoutNav() {
   <Stack.Screen name="seguridad" options={{ headerShown: false }} />
   <Stack.Screen name="ajustes-grupo" options={{ headerShown: false }} />
   <Stack.Screen name="dashboard-grupal" options={{ headerShown: false }} />
+  <Stack.Screen name="vincular-tacho" options={{ headerShown: false }} />
+  <Stack.Screen name="crear-tacho" options={{ headerShown: false }} />
+  <Stack.Screen name="canjes" options={{ headerShown: false }} />
+  <Stack.Screen name="mis-canjes" options={{ headerShown: false }} />
   <Stack.Screen name="+not-found" />
 </Stack>
     </ThemeProvider>
