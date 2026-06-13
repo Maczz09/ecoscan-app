@@ -30,10 +30,12 @@ export const useAuth = () => {
     } catch (error: any) {
       setIsLoading(false);
       let errorMessage = 'Credenciales incorrectas.';
+      let statusCode = 500;
       if (error.response && error.response.data) {
         errorMessage = error.response.data.message || errorMessage;
+        statusCode = error.response.status || 500;
       }
-      return { success: false, message: errorMessage };
+      return { success: false, message: errorMessage, status: statusCode };
     }
   };
 

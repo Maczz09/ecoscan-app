@@ -27,7 +27,7 @@ export const ForgotPasswordScreen = () => {
 
   const handleValidateCode = async () => {
     if (!code) return Alert.alert('Error', 'Ingresa el código.');
-    const result = await validateCode(code);
+    const result = await validateCode(email, code);
     if (result.success) {
       setStep(3);
     } else {
@@ -37,8 +37,9 @@ export const ForgotPasswordScreen = () => {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) return Alert.alert('Error', 'La contraseña debe ser mayor a 6 caracteres.');
-    const result = await changePassword(newPassword);
+    const result = await changePassword(email, code, newPassword);
     if (result.success) setStep(4);
+    else Alert.alert('Error', result.message || 'Hubo un error al actualizar');
   };
 
   return (

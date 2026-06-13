@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import api from '@/src/services/api';
 
 export const SeguridadScreen = () => {
   const router = useRouter();
@@ -16,10 +17,31 @@ export const SeguridadScreen = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
-    // Aquí validaciones (ej. que newPassword == confirmPassword, llamada al backend)
-    setShowSuccess(true);
+  const handleSave = async () => {
+    if (!currentPassword) {
+      return Alert.alert('Error', 'Ingresa tu contraseña actual');
+    }
+    if (newPassword.length < 6) {
+      return Alert.alert('Error', 'La nueva contraseña debe tener al menos 6 caracteres');
+    }
+    if (newPassword !== confirmPassword) {
+      return Alert.alert('Error', 'Las nuevas contraseñas no coinciden');
+    }
+
+    setIsLoading(true);
+    try {
+      await api.put('/v1/user-profile', { 
+        current_password: currentPassword, 
+        new_password: newPassword 
+      });
+      setShowSuccess(true);
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Error al actualizar contraseña');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSuccessAccept = () => {
@@ -109,8 +131,8 @@ export const SeguridadScreen = () => {
 
       {/* BOTÓN GUARDAR */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.8}>
-          <Text style={styles.saveBtnText}>Actualizar Contraseña</Text>
+        <TouchableOpacity style={[styles.saveBtn, isLoading && { opacity: 0.7 }]} onPress={handleSave} activeOpacity={0.8} disabled={isLoading}>
+          <Text style={styles.saveBtnText}>{isLoading ? 'Actualizando...' : 'Actualizar Contraseña'}</Text>
         </TouchableOpacity>
       </View>
 

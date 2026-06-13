@@ -26,7 +26,12 @@ const handleLogin = async () => {
     if (result.success) {
       router.replace('/(tabs)'); 
     } else {
-      alert(result.message || 'Error al iniciar sesión');
+      if (result.status === 403) {
+        alert(result.message || 'Tu cuenta está pendiente de verificación.');
+        router.replace({ pathname: '/(auth)/verify' as any, params: { email } });
+      } else {
+        alert(result.message || 'Error al iniciar sesión');
+      }
     }
   };
 

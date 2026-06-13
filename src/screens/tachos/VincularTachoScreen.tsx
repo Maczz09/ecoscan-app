@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { api } from '@/src/services/api';
 
 export const VincularTachoScreen = () => {
   const router = useRouter();
@@ -34,29 +35,30 @@ export const VincularTachoScreen = () => {
     );
   }
 
-  const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
+  const handleBarCodeScanned = async ({ type, data }: { type: string, data: string }) => {
     setScanned(true);
-    setTachoId(data); // El QR debería contener el ID del tacho
-    setPinVisible(true);
-  };
+    
+    try {
+      const response = await api.post('/v1/vincular-tacho', {
+        pin_qr: data
+      });
 
-  const handleVincular = () => {
-    if (pin.length !== 6) {
-      Alert.alert('Error', 'El PIN debe tener 6 dígitos.');
-      return;
-    }
-
-    // MOCK VALIDATION
-    if (pin === '123456') {
-      setPinVisible(false);
-      Alert.alert(
-        '¡Tacho Vinculado!',
-        `El tacho ${tachoId} se ha vinculado a tu grupo exitosamente.`,
-        [{ text: 'Aceptar', onPress: () => router.back() }]
-      );
-    } else {
-      Alert.alert('PIN Incorrecto', 'El PIN ingresado no coincide con el de este tacho.');
-      setPin('');
+      if (response.data.status === 'success') {
+        Alert.alert(
+          '¡Tacho Vinculado!',
+          response.data.message || 'Tienes 60 segundos para botar tu basura.',
+          [{ text: 'Aceptar', onPress: () => router.back() }]
+        );
+      }
+    } catch (error: any) {
+      let errorMessage = 'El código QR es inválido o ya expiró.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      Alert.alert('Error al vincular', errorMessage, [
+        { text: 'Intentar de nuevo', onPress: () => setScanned(false) }
+      ]);
     }
   };
 
@@ -78,45 +80,12 @@ export const VincularTachoScreen = () => {
           barcodeScannerSettings={{
             barcodeTypes: ['qr'],
           }}
-        >
-          <View style={styles.overlay}>
-            <View style={styles.scanArea} />
-            <Text style={styles.instructionText}>Apunta la cámara al código QR de tu Tacho EcoScan</Text>
-          </View>
-        </CameraView>
-      </View>
-
-      {/* MODAL PIN */}
-      <Modal visible={pinVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <MaterialCommunityIcons name="lock-outline" size={48} color="#10B981" />
-            <Text style={styles.modalTitle}>Tacho Detectado</Text>
-            <Text style={styles.modalSubtitle}>Código: {tachoId}</Text>
-            
-            <Text style={styles.pinLabel}>Ingresa el PIN de seguridad (6 dígitos)</Text>
-            <TextInput
-              style={styles.pinInput}
-              keyboardType="number-pad"
-              maxLength={6}
-              secureTextEntry
-              value={pin}
-              onChangeText={setPin}
-              placeholder="••••••"
-              placeholderTextColor="#9CA3AF"
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.btnCancel} onPress={() => { setPinVisible(false); setScanned(false); setPin(''); }}>
-                <Text style={styles.btnCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnConfirm} onPress={handleVincular}>
-                <Text style={styles.btnConfirmText}>Vincular</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        />
+        <View style={[styles.overlay, StyleSheet.absoluteFillObject]}>
+          <View style={styles.scanArea} />
+          <Text style={styles.instructionText}>Apunta la cámara al código QR de tu Tacho EcoScan</Text>
         </View>
-      </Modal>
+      </View>
     </SafeAreaView>
   );
 };

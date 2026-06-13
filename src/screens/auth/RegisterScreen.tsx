@@ -42,7 +42,7 @@ export const RegisterScreen = () => {
             <MaterialCommunityIcons name="check-circle" size={80} color="#10B981" />
             <Text style={styles.title}>¡Cuenta Creada!</Text>
             <Text style={styles.subtitle}>Tu usuario ha sido registrado con éxito en ECOSCAN.</Text>
-            <CustomButton title="Ir al Login" onPress={() => router.replace('/(auth)/login')} />
+            <CustomButton title="Verificar Correo" onPress={() => router.replace({ pathname: '/(auth)/verify' as any, params: { email } })} />
           </View>
         ) : (
           <View style={styles.formContainer}>

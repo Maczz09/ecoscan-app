@@ -9,7 +9,7 @@ export interface Premio {
   descripcion: string;
   costo_puntos: number;
   stock_disponible: number;
-  icon: string; // Para usar con MaterialCommunityIcons
+  icon: string;
   color: string;
 }
 
@@ -35,26 +35,29 @@ export const useRewards = () => {
     try {
       setLoading(true);
       const response = await api.get('/v1/recompensas');
-      
-      // Mapeamos los datos de la DB para agregarles el icono y color visual
-      const iconMap: Record<number, { icon: string, color: string }> = {
-        1: { icon: 'shopping', color: '#10B981' },
-        2: { icon: 'cup-water', color: '#3B82F6' },
-        3: { icon: 'ticket-percent', color: '#F59E0B' },
-        4: { icon: 'silverware-fork-knife', color: '#8B5CF6' },
-        5: { icon: 'bus', color: '#EF4444' }
+
+      const iconMap: Record<string, { icon: string, color: string }> = {
+        'comida': { icon: 'food', color: '#F59E0B' },
+        'merchandising': { icon: 'shopping', color: '#8B5CF6' },
+        'entretenimiento': { icon: 'ticket-percent', color: '#EF4444' },
+        'logros': { icon: 'medal', color: '#EAB308' },
+        'compras': { icon: 'cart', color: '#10B981' }
       };
 
-      const premiosDB = response.data.data.map((p: any) => ({
+      const allPremios = [
+        ...(response.data.data.individuales || []),
+        ...(response.data.data.grupales || [])
+      ];
+
+      const premiosDB = allPremios.map((p: any) => ({
         ...p,
-        icon: iconMap[p.id_premio]?.icon || 'gift',
-        color: iconMap[p.id_premio]?.color || '#9CA3AF'
+        icon: iconMap[p.categoria]?.icon || 'gift',
+        color: iconMap[p.categoria]?.color || '#3B82F6'
       }));
 
       setPremios(premiosDB);
     } catch (error) {
       console.error('Error fetching rewards:', error);
-      // Si falla la API (ej: DB vacía), usamos los mocks para que no falle la UI
       setPremios(MOCK_PREMIOS);
     } finally {
       setLoading(false);
@@ -72,7 +75,7 @@ export const useRewards = () => {
 
     try {
       const response = await api.post('/v1/canjear', { id_premio: id });
-      
+
       if (response.data.status === 'success') {
         subtractPuntos(cost);
         await fetchPremios();
@@ -85,7 +88,6 @@ export const useRewards = () => {
     }
   };
 
-  // Mantenemos canjearPremio para compatibilidad con código existente que lo use así
   const canjearPremio = async (id_premio: number): Promise<string> => {
     const premio = premios.find(p => p.id_premio === id_premio);
     if (!premio) throw new Error('Premio no encontrado');

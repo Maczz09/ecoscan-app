@@ -27,7 +27,14 @@ export const useRegister = () => {
       let errorMessage = 'Ocurrió un error al intentar registrarse.';
 
       if (error.response && error.response.data) {
-        errorMessage = error.response.data.message || errorMessage;
+        if (error.response.status === 422 && error.response.data.errors) {
+          // Extraer el primer error de validación de Laravel
+          const errors = error.response.data.errors;
+          const firstKey = Object.keys(errors)[0];
+          errorMessage = errors[firstKey][0];
+        } else {
+          errorMessage = error.response.data.message || errorMessage;
+        }
       }
 
       return { success: false, message: errorMessage };

@@ -50,15 +50,20 @@ export const useMisCanjes = () => {
       setLoading(true);
       const response = await api.get('/v1/mis-canjes');
       
-      const iconMap: Record<number, { icon: string, color: string }> = {
-        1: { icon: 'shopping', color: '#10B981' },
-        2: { icon: 'cup-water', color: '#3B82F6' },
-        3: { icon: 'ticket-percent', color: '#F59E0B' },
-        4: { icon: 'silverware-fork-knife', color: '#8B5CF6' },
-        5: { icon: 'bus', color: '#EF4444' }
+      const iconMap: Record<string, { icon: string, color: string }> = {
+        'comida': { icon: 'food', color: '#F59E0B' },
+        'merchandising': { icon: 'shopping', color: '#8B5CF6' },
+        'entretenimiento': { icon: 'ticket-percent', color: '#EF4444' },
+        'logros': { icon: 'medal', color: '#EAB308' },
+        'compras': { icon: 'cart', color: '#10B981' }
       };
 
-      const canjesDB = response.data.data.map((c: any) => ({
+      const allCanjes = [
+        ...(response.data.data.individuales || []),
+        ...(response.data.data.grupales || [])
+      ];
+
+      const canjesDB = allCanjes.map((c: any) => ({
         id_canje: `ECO-${c.id_canje}`,
         fecha_canje: c.fecha_canje,
         premio: {
@@ -67,8 +72,8 @@ export const useMisCanjes = () => {
           descripcion: c.reward.descripcion,
           costo_puntos: c.reward.costo_puntos,
           stock_disponible: c.reward.stock_disponible,
-          icon: iconMap[c.reward.id_premio]?.icon || 'gift',
-          color: iconMap[c.reward.id_premio]?.color || '#9CA3AF'
+          icon: iconMap[c.reward.categoria]?.icon || 'gift',
+          color: iconMap[c.reward.categoria]?.color || '#3B82F6'
         }
       }));
 

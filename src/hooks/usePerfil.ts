@@ -40,8 +40,7 @@ export const usePerfil = () => {
 
   const logout = async () => {
     try {
-      // Opcional: Llamar al endpoint de logout si existe
-      // await api.post('/v1/logout');
+      await api.post('/v1/logout');
       
       // Limpiar estados globales
       authLogout();

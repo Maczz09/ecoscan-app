@@ -1,40 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
-import { CustomInput } from '@/src/components/CustomInput';
-import { CustomButton } from '@/src/components/CustomButton';
-
-// MOCK DATA basado en la BD: grupos y usuario_grupos
-const initialMembers = [
-  { id: 1, name: 'Max Garcia', role: 'ADMIN_GRUPO' },
-  { id: 2, name: 'Ana Lopez', role: 'MIEMBRO' },
-  { id: 3, name: 'Carlos Ruiz', role: 'MIEMBRO' },
-];
+import { useAuthStore } from '@/src/store/useAuthStore';
+import api from '@/src/services/api';
 
 export const AjustesGrupoScreen = () => {
   const router = useRouter();
-  const [groupName, setGroupName] = useState('Familia García');
-  const [members, setMembers] = useState(initialMembers);
+  const user = useAuthStore(state => state.user);
+  
+  const [loading, setLoading] = useState(true);
+  const [grupoData, setGrupoData] = useState<any>(null);
 
-  const handleSaveGroupName = () => {
-    Alert.alert('Guardado', `El nombre del grupo ha sido actualizado a: ${groupName}`);
+  const fetchGrupo = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/v1/grupos');
+      const grupos = res.data.data;
+      if (grupos && grupos.length > 0) {
+        const detailRes = await api.get(`/v1/grupos/${grupos[0].id_grupo}`);
+        setGrupoData(detailRes.data.data);
+      } else {
+        router.replace('/perfil');
+      }
+    } catch (error) {
+      console.error('Error fetching group in ajustes:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleChangeRole = (userId: number, currentRole: string) => {
-    const newRole = currentRole === 'ADMIN_GRUPO' ? 'MIEMBRO' : 'ADMIN_GRUPO';
-    
+  useEffect(() => {
+    fetchGrupo();
+  }, []);
+
+  const handleLeaveGroup = () => {
     Alert.alert(
-      'Cambiar Rol',
-      `¿Estás seguro de cambiar el rol a ${newRole}?`,
+      'Abandonar Familia',
+      '¿Estás seguro de que deseas salir de este grupo? Perderás el acceso a las estadísticas.',
       [
         { text: 'Cancelar', style: 'cancel' },
         { 
-          text: 'Sí, cambiar', 
-          onPress: () => {
-            setMembers(members.map(m => m.id === userId ? { ...m, role: newRole } : m));
+          text: 'Sí, Salir', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/v1/grupos/${grupoData.id_grupo}/leave`);
+              Alert.alert('Éxito', 'Has abandonado la familia');
+              router.replace('/perfil');
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.message || 'No se pudo abandonar el grupo');
+            }
           }
         }
       ]
@@ -43,20 +60,36 @@ export const AjustesGrupoScreen = () => {
 
   const handleRemoveMember = (userId: number, userName: string) => {
     Alert.alert(
-      'Eliminar Miembro',
-      `¿Estás seguro de que deseas eliminar a ${userName} del grupo?`,
+      'Expulsar Miembro',
+      `¿Estás seguro de que deseas eliminar a ${userName} de la familia?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         { 
-          text: 'Eliminar', 
+          text: 'Expulsar', 
           style: 'destructive',
-          onPress: () => {
-            setMembers(members.filter(m => m.id !== userId));
+          onPress: async () => {
+            try {
+              await api.delete(`/v1/grupos/${grupoData.id_grupo}/members/${userId}`);
+              Alert.alert('Éxito', 'Miembro expulsado correctamente');
+              fetchGrupo(); // Recargar lista
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.message || 'No se pudo expulsar al miembro');
+            }
           }
         }
       ]
     );
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#10B981" />
+      </SafeAreaView>
+    );
+  }
+
+  const isAdmin = grupoData?.ranking?.find((m: any) => m.id_usuario === user?.id_usuario)?.rol_en_grupo === 'ADMIN_GRUPO';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -64,61 +97,46 @@ export const AjustesGrupoScreen = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#374151" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ajustes del Grupo</Text>
+        <Text style={styles.headerTitle}>Ajustes de la Familia</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
         
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Información del Grupo</Text>
-          <CustomInput 
-            label="Nombre del Grupo" 
-            iconName="account-group-outline" 
-            placeholder="Ej. Mi Familia" 
-            value={groupName} 
-            onChangeText={setGroupName} 
-          />
-          <CustomButton title="Guardar Cambios" onPress={handleSaveGroupName} />
+          <Text style={styles.sectionTitle}>Información</Text>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Nombre de la Familia</Text>
+            <Text style={styles.infoValue}>{grupoData.nombre_grupo}</Text>
+          </View>
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Gestión de Miembros</Text>
-          <Text style={styles.sectionSubtitle}>Asigna roles o elimina miembros de tu grupo.</Text>
+          <Text style={styles.sectionTitle}>Miembros</Text>
+          <Text style={styles.sectionSubtitle}>Gestiona quién pertenece a tu familia.</Text>
 
           <View style={styles.listContainer}>
-            {members.map((member) => (
-              <View key={member.id} style={styles.memberCard}>
+            {grupoData.ranking?.map((member: any) => (
+              <View key={member.id_usuario} style={styles.memberCard}>
                 <View style={styles.memberInfo}>
                   <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{member.name.charAt(0)}</Text>
+                    <Text style={styles.avatarText}>{member.nombre.charAt(0)}</Text>
                   </View>
                   <View>
-                    <Text style={styles.memberName}>{member.name}</Text>
+                    <Text style={styles.memberName}>{member.nombre} {member.id_usuario === user?.id_usuario ? '(Tú)' : ''}</Text>
                     <Text style={styles.memberRole}>
-                      {member.role === 'ADMIN_GRUPO' ? 'Admin. de Grupo' : 'Miembro'}
+                      {member.rol_en_grupo === 'ADMIN_GRUPO' ? 'Admin. de Grupo' : 'Miembro'}
                     </Text>
                   </View>
                 </View>
 
-                {/* Acciones para el admin (no se puede auto-eliminar si es el id 1 en este mock) */}
-                {member.id !== 1 && (
+                {isAdmin && member.id_usuario !== user?.id_usuario && (
                   <View style={styles.actionsRow}>
                     <TouchableOpacity 
-                      style={styles.actionIconBtn} 
-                      onPress={() => handleChangeRole(member.id, member.role)}
-                    >
-                      <MaterialCommunityIcons 
-                        name={member.role === 'ADMIN_GRUPO' ? "account-arrow-down" : "account-arrow-up"} 
-                        size={22} 
-                        color="#10B981" 
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
                       style={styles.actionIconBtn}
-                      onPress={() => handleRemoveMember(member.id, member.name)}
+                      onPress={() => handleRemoveMember(member.id_usuario, member.nombre)}
                     >
                       <MaterialCommunityIcons name="account-remove" size={22} color="#EF4444" />
                     </TouchableOpacity>
@@ -129,6 +147,13 @@ export const AjustesGrupoScreen = () => {
           </View>
         </View>
 
+        <View style={styles.dangerZone}>
+          <TouchableOpacity style={styles.leaveBtn} onPress={handleLeaveGroup}>
+            <MaterialCommunityIcons name="exit-run" size={24} color="#EF4444" />
+            <Text style={styles.leaveBtnText}>Abandonar Familia</Text>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,6 +161,7 @@ export const AjustesGrupoScreen = () => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F3F4F6' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
   backButton: { padding: 5 },
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827' },
@@ -146,6 +172,10 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#374151', marginBottom: 6 },
   sectionSubtitle: { fontSize: 14, color: '#6B7280', marginBottom: 16 },
   
+  infoBox: { backgroundColor: '#FFF', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB' },
+  infoLabel: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
+  infoValue: { fontSize: 16, fontWeight: 'bold', color: '#111827' },
+
   divider: { height: 1, backgroundColor: '#E5E7EB', marginVertical: 10 },
   
   listContainer: { gap: 12 },
@@ -157,5 +187,9 @@ const styles = StyleSheet.create({
   memberRole: { fontSize: 13, color: '#6B7280' },
   
   actionsRow: { flexDirection: 'row', gap: 8 },
-  actionIconBtn: { padding: 8, backgroundColor: '#F9FAFB', borderRadius: 8 },
+  actionIconBtn: { padding: 8, backgroundColor: '#FEE2E2', borderRadius: 8 },
+
+  dangerZone: { marginTop: 40, alignItems: 'center' },
+  leaveBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 16, borderRadius: 12, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FECACA', width: '100%', justifyContent: 'center' },
+  leaveBtnText: { color: '#EF4444', fontWeight: 'bold', fontSize: 16 }
 });

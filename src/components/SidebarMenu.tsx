@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { usePointsStore } from '@/src/store/usePointsStore';
 
 const { width, height } = Dimensions.get('window');
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
@@ -19,6 +20,7 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
   const pathname = usePathname();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
+  const puntos = usePointsStore((state) => state.puntos);
   const firstName = user?.nombre?.split(' ')[0] || 'Usuario';
 
   // Animaciones
@@ -100,7 +102,7 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
                 </View>
                 <View style={styles.profileText}>
                   <Text style={styles.profileName}>Hola, {firstName}</Text>
-                  <Text style={styles.profilePoints}>1250 Eco Puntos</Text>
+                  <Text style={styles.profilePoints}>{puntos} Eco Puntos</Text>
                 </View>
               </View>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>

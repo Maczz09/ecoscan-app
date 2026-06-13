@@ -1,22 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePerfil } from '@/src/hooks/usePerfil';
+import api from '@/src/services/api';
 
 export const EditarPerfilScreen = () => {
   const router = useRouter();
-  const { user } = usePerfil();
+  const { user, refreshProfile } = usePerfil();
 
   const [nombre, setNombre] = useState(user?.nombre || '');
   const [email, setEmail] = useState(user?.email || '');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
-    // Aquí iría la lógica para enviar al backend (ej. PUT /api/usuarios/me)
-    // Mostramos el modal de éxito
-    setShowSuccess(true);
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      await api.put('/v1/user-profile', { nombre, email });
+      await refreshProfile();
+      setShowSuccess(true);
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Hubo un error al actualizar el perfil.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSuccessAccept = () => {
@@ -86,8 +95,8 @@ export const EditarPerfilScreen = () => {
 
       {/* BOTÓN GUARDAR (Fijo abajo) */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.8}>
-          <Text style={styles.saveBtnText}>Guardar Cambios</Text>
+        <TouchableOpacity style={[styles.saveBtn, isLoading && { opacity: 0.7 }]} onPress={handleSave} activeOpacity={0.8} disabled={isLoading}>
+          <Text style={styles.saveBtnText}>{isLoading ? 'Guardando...' : 'Guardar Cambios'}</Text>
         </TouchableOpacity>
       </View>
 
