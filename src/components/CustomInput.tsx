@@ -1,5 +1,5 @@
-import React from 'react';
-import { TextInput, View, Text, StyleSheet, TextInputProps } from 'react-native';
+import React, { useState } from 'react';
+import { TextInput, View, Text, StyleSheet, TextInputProps, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface CustomInputProps extends TextInputProps {
@@ -7,7 +7,9 @@ interface CustomInputProps extends TextInputProps {
   label: string;
 }
 
-export const CustomInput = ({ iconName, label, ...props }: CustomInputProps) => {
+export const CustomInput = ({ iconName, label, secureTextEntry, ...props }: CustomInputProps) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -16,8 +18,21 @@ export const CustomInput = ({ iconName, label, ...props }: CustomInputProps) => 
         <TextInput 
           style={styles.input} 
           placeholderTextColor="#9CA3AF"
+          secureTextEntry={secureTextEntry && !isPasswordVisible}
           {...props} 
         />
+        {secureTextEntry && (
+          <TouchableOpacity 
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)} 
+            style={styles.eyeIconContainer}
+          >
+            <MaterialCommunityIcons 
+              name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'} 
+              size={20} 
+              color="#9CA3AF" 
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -37,4 +52,5 @@ const styles = StyleSheet.create({
   },
   icon: { marginRight: 10 },
   input: { flex: 1, paddingVertical: 14, fontSize: 16, color: '#1F2937' },
+  eyeIconContainer: { padding: 4 },
 });

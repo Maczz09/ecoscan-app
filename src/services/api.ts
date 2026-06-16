@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
-const API_URL = 'http://10.192.111.157:8000/api';
+const API_URL = 'http://192.168.15.219:8000/api';
+// const API_URL = 'http://10.192.111.157:8000/api';
 //const API_URL = 'https://fisionortumbes.com/api';
 
 

@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import api from '@/src/services/api';
 import { usePointsStore } from '@/src/store/usePointsStore';
 
@@ -16,6 +17,11 @@ export interface DashboardData {
     eco_puntos_personales: number; 
     racha_dias_activos: number;    
   };
+  sesion_actual: Array<{
+    material: string;
+    puntos: number;
+    hora: string;
+  }>;
 }
 
 export const useTacho = () => {
@@ -24,9 +30,13 @@ export const useTacho = () => {
   
   const setGlobalPoints = usePointsStore(state => state.setPuntos);
 
-  const fetchTachoStatus = useCallback(async () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchTachoStatus = useCallback(async (isBackground = false) => {
     try {
-      setIsLoading(true);
+      // Solo mostramos la pantalla de carga completa si no es una carga de fondo
+      if (!isBackground) setIsLoading(true);
+      
       const response = await api.get('/v1/tacho/status');
       
       if (response.data.status === 'success') {
@@ -40,14 +50,38 @@ export const useTacho = () => {
     } catch (error) {
       console.error('Error fetching tacho status:', error);
     } finally {
-      setIsLoading(false);
+      if (!isBackground) setIsLoading(false);
     }
   }, [setGlobalPoints]);
 
-  useEffect(() => {
-    fetchTachoStatus();
-  }, [fetchTachoStatus]);
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchTachoStatus(true);
+    setIsRefreshing(false);
+  };
 
-  return { data, isLoading, refetch: fetchTachoStatus };
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      // 1. Carga inicial al enfocar la pantalla
+      fetchTachoStatus(true); // background=true para no parpadear la pantalla
+
+      // 2. Polling cada 3 segundos
+      const interval = setInterval(() => {
+        if (isActive) {
+          fetchTachoStatus(true);
+        }
+      }, 3000);
+
+      // Limpiamos el intervalo si el usuario cambia de pestaña
+      return () => {
+        isActive = false;
+        clearInterval(interval);
+      };
+    }, [fetchTachoStatus])
+  );
+  
+  return { data, isLoading, isRefreshing, onRefresh, refetch: fetchTachoStatus };
 };
 

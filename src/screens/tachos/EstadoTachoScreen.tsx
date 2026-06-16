@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTacho } from '@/src/hooks/useTacho';
@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 
 export const EstadoTachoScreen = () => {
   const router = useRouter();
-  const { data, isLoading } = useTacho();
+  const { data, isLoading, isRefreshing, onRefresh } = useTacho();
   const [menuVisible, setMenuVisible] = useState(false);
   const user = useAuthStore((state) => state.user);
   const firstName = user?.nombre?.split(' ')[0] || 'Usuario';
@@ -25,8 +25,14 @@ export const EstadoTachoScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        
+      <ScrollView 
+        contentContainerStyle={{ padding: 20, paddingBottom: 120 }} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={['#10B981']} />
+        }
+      >
+
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuBtn}>
@@ -70,12 +76,33 @@ export const EstadoTachoScreen = () => {
 
             <View style={styles.divider} />
 
-            <View style={styles.levelsContainer}>
-              <LevelIndicator label="Plástico" percentage={data.tacho.nivel_llenado_plastico || 0} color="#3B82F6" />
-              <LevelIndicator label="Papel/Cartón" percentage={data.tacho.nivel_llenado_papel || 0} color="#F59E0B" />
-              <LevelIndicator label="Vidrio" percentage={data.tacho.nivel_llenado_vidrio || 0} color="#8B5CF6" />
-              {data.tacho.nivel_llenado_organico > 0 && (
-                <LevelIndicator label="Orgánico" percentage={data.tacho.nivel_llenado_organico} color="#10B981" />
+            <View style={styles.sessionContainer}>
+              <Text style={styles.sessionTitle}>Últimos Reciclajes (Sesión Actual)</Text>
+
+              {!data.sesion_actual || data.sesion_actual.length === 0 ? (
+                <View style={styles.emptySession}>
+                  <MaterialCommunityIcons name="qrcode-scan" size={32} color="#D1D5DB" />
+                  <Text style={styles.emptySessionText}>
+                    Escanea el QR del tacho y tira tu primer residuo para verlo aquí.
+                  </Text>
+                </View>
+              ) : (
+                data.sesion_actual.map((item, idx) => (
+                  <View key={idx} style={styles.sessionItem}>
+                    <View style={styles.sessionItemLeft}>
+                      <View style={styles.sessionItemIcon}>
+                        <MaterialCommunityIcons name="recycle" size={20} color="#10B981" />
+                      </View>
+                      <View>
+                        <Text style={styles.sessionItemMaterial}>{item.material}</Text>
+                        <Text style={styles.sessionItemTime}>{item.hora}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.sessionItemPoints}>
+                      <Text style={styles.sessionItemPointsText}>+{item.puntos} pts</Text>
+                    </View>
+                  </View>
+                ))
               )}
             </View>
           </View>
@@ -113,13 +140,13 @@ export const EstadoTachoScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' }, // Fondo un poco más gris para resaltar tarjetas blancas
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  
+
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
   menuBtn: { padding: 10, backgroundColor: '#FFF', borderRadius: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
   greeting: { fontSize: 24, fontWeight: '900', color: '#111827', letterSpacing: -0.5 },
   date: { fontSize: 14, color: '#6B7280', textTransform: 'capitalize', fontWeight: '500', marginTop: 2 },
   actions: { flexDirection: 'row', gap: 12 },
-  
+
   metricsRow: { flexDirection: 'row', gap: 15, marginBottom: 25 },
   metricCard: { flex: 1, backgroundColor: '#FFF', padding: 22, borderRadius: 24, alignItems: 'center', shadowColor: '#10B981', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 15, elevation: 5, borderWidth: 1, borderColor: '#F0FDF4' },
   metricValue: { fontSize: 26, fontWeight: '900', color: '#111827', marginTop: 10 },
@@ -134,9 +161,18 @@ const styles = StyleSheet.create({
   bgWarn: { backgroundColor: '#FEF3C7' },
   badgeText: { fontSize: 11, fontWeight: '800', color: '#065F46', letterSpacing: 0.5 },
   divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 20 },
-  
-  levelsContainer: { gap: 8 }, // Espaciado entre niveles
 
+  sessionContainer: { marginTop: 5 },
+  sessionTitle: { fontSize: 15, fontWeight: '700', color: '#374151', marginBottom: 15 },
+  emptySession: { alignItems: 'center', paddingVertical: 20, backgroundColor: '#F9FAFB', borderRadius: 16 },
+  emptySessionText: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginTop: 10, paddingHorizontal: 20 },
+  sessionItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 15, borderRadius: 16, marginBottom: 10 },
+  sessionItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sessionItemIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ECFDF5', justifyContent: 'center', alignItems: 'center' },
+  sessionItemMaterial: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  sessionItemTime: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  sessionItemPoints: { backgroundColor: '#10B981', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  sessionItemPointsText: { color: '#FFF', fontWeight: '800', fontSize: 13 },
   floatingBottom: {
     position: 'absolute',
     bottom: 100,
@@ -145,24 +181,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12, // Espacio entre los botones
   },
-  scanBtn: { 
+  scanBtn: {
     width: '100%',
-    backgroundColor: '#111827', 
-    flexDirection: 'row', 
-    paddingHorizontal: 20, 
-    paddingVertical: 18, 
-    borderRadius: 20, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: 12, 
-    shadowColor: '#111827', 
-    shadowOffset: { width: 0, height: 8 }, 
-    shadowOpacity: 0.25, 
+    backgroundColor: '#111827',
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 8,
   },
   scanBtnText: { color: '#FFF', fontWeight: '800', fontSize: 16, letterSpacing: 0.5 },
-  
+
   adminBtn: {
     backgroundColor: '#ECFDF5',
     borderWidth: 2,

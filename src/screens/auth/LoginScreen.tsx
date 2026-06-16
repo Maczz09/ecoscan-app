@@ -7,9 +7,11 @@ import { useRouter } from 'expo-router';
 import { CustomInput } from '@/src/components/CustomInput';
 import { CustomButton } from '@/src/components/CustomButton';
 import { useAuth } from '@/src/hooks/useAuth';
+import { useAuthStore } from '@/src/store/useAuthStore';
 
 export const LoginScreen = () => {
-  const [email, setEmail] = useState('');
+  const rememberedEmail = useAuthStore(state => state.rememberedEmail);
+  const [email, setEmail] = useState(rememberedEmail || '');
   const [password, setPassword] = useState('');
   
   const { login, isLoading } = useAuth();

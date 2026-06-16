@@ -16,6 +16,7 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
+  rememberedEmail: string | null;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
 }
@@ -25,11 +26,12 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      rememberedEmail: null,
       
-      // Función para guardar al usuario y su token
-      setAuth: (user, token) => set({ user, token }),
+      // Función para guardar al usuario y su token. Guardamos también el email para recordarlo.
+      setAuth: (user, token) => set({ user, token, rememberedEmail: user.email }),
       
-      // Función para cerrar sesión y limpiar datos
+      // Función para cerrar sesión y limpiar datos (OJO: no limpiamos rememberedEmail)
       logout: () => set({ user: null, token: null }),
     }),
     {
