@@ -25,8 +25,8 @@ export const EstadoTachoScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
-        contentContainerStyle={{ padding: 20, paddingBottom: 120 }} 
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={['#10B981']} />
@@ -52,69 +52,74 @@ export const EstadoTachoScreen = () => {
         <View style={styles.metricsRow}>
           <View style={styles.metricCard}>
             <MaterialCommunityIcons name="leaf" size={28} color="#10B981" />
-            <Text style={styles.metricValue}>{data?.metricas.eco_puntos_personales}</Text>
+            <Text style={styles.metricValue}>{data?.metricas?.eco_puntos_personales ?? 0}</Text>
             <Text style={styles.metricLabel}>Eco Puntos</Text>
           </View>
           <View style={styles.metricCard}>
             <MaterialCommunityIcons name="fire" size={28} color="#F59E0B" />
-            <Text style={styles.metricValue}>{data?.metricas.racha_dias_activos} Días</Text>
+            <Text style={styles.metricValue}>{data?.metricas?.racha_dias_activos ?? 0} Días</Text>
             <Text style={styles.metricLabel}>Racha Activa</Text>
           </View>
         </View>
 
-        {data?.tacho ? (
-          <View style={styles.statusCard}>
-            <View style={styles.statusHeader}>
-              <View>
-                <Text style={styles.tachoName}>Tacho Principal</Text>
-                <Text style={styles.tachoId}>ID: {data.tacho.codigo_qr}</Text>
-              </View>
-              <View style={[styles.badgeStatus, data.tacho.estado_operativo === 'ACTIVO' ? styles.bgSuccess : styles.bgWarn]}>
-                <Text style={styles.badgeText}>{data.tacho.estado_operativo}</Text>
+        {/* Oculto temporalmente "Mostrar Tacho Principal en pantalla principal" 
+          data?.tacho ? (
+            <View style={styles.statusCard}>
+              <View style={styles.statusHeader}>
+                <View>
+                  <Text style={styles.tachoName}>Tacho Principal</Text>
+                  <Text style={styles.tachoId}>ID: {data.tacho.codigo_qr}</Text>
+                </View>
+                <View style={[styles.badgeStatus, data.tacho.estado_operativo === 'ACTIVO' ? styles.bgSuccess : styles.bgWarn]}>
+                  <Text style={styles.badgeText}>{data.tacho.estado_operativo}</Text>
+                </View>
               </View>
             </View>
+          ) : (
+            <View style={[styles.statusCard, { alignItems: 'center', paddingVertical: 40 }]}>
+              <MaterialCommunityIcons name="trash-can-outline" size={64} color="#D1D5DB" />
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginTop: 16 }}>Sin tacho vinculado</Text>
+              <Text style={{ fontSize: 14, color: '#6B7280', textAlign: 'center', marginTop: 8, paddingHorizontal: 20 }}>
+                Aún no tienes un tacho asociado a tu cuenta.
+              </Text>
+            </View>
+          )
+        */}
 
-            <View style={styles.divider} />
+        <View style={styles.statusCard}>
+          <View style={styles.sessionContainer}>
+            <Text style={styles.sessionTitle}>Últimos Reciclajes (Sesión Actual)</Text>
 
-            <View style={styles.sessionContainer}>
-              <Text style={styles.sessionTitle}>Últimos Reciclajes (Sesión Actual)</Text>
-
-              {!data.sesion_actual || data.sesion_actual.length === 0 ? (
-                <View style={styles.emptySession}>
-                  <MaterialCommunityIcons name="qrcode-scan" size={32} color="#D1D5DB" />
-                  <Text style={styles.emptySessionText}>
-                    Escanea el QR del tacho y tira tu primer residuo para verlo aquí.
-                  </Text>
-                </View>
-              ) : (
-                data.sesion_actual.map((item, idx) => (
-                  <View key={idx} style={styles.sessionItem}>
-                    <View style={styles.sessionItemLeft}>
-                      <View style={styles.sessionItemIcon}>
-                        <MaterialCommunityIcons name="recycle" size={20} color="#10B981" />
-                      </View>
-                      <View>
-                        <Text style={styles.sessionItemMaterial}>{item.material}</Text>
-                        <Text style={styles.sessionItemTime}>{item.hora}</Text>
-                      </View>
+            {!data?.sesion_actual || data.sesion_actual.length === 0 ? (
+              <View style={styles.emptySession}>
+                <MaterialCommunityIcons name="qrcode-scan" size={40} color="#D1D5DB" />
+                <Text style={styles.emptySessionText}>
+                  Aún no has reciclado nada en esta sesión.
+                </Text>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#10B981', marginTop: 8 }}>
+                  ¡Vamos por el primero! 🌍
+                </Text>
+              </View>
+            ) : (
+              data.sesion_actual.map((item, idx) => (
+                <View key={idx} style={styles.sessionItem}>
+                  <View style={styles.sessionItemLeft}>
+                    <View style={styles.sessionItemIcon}>
+                      <MaterialCommunityIcons name="recycle" size={20} color="#10B981" />
                     </View>
-                    <View style={styles.sessionItemPoints}>
-                      <Text style={styles.sessionItemPointsText}>+{item.puntos} pts</Text>
+                    <View>
+                      <Text style={styles.sessionItemMaterial}>{item.material}</Text>
+                      <Text style={styles.sessionItemTime}>{item.hora}</Text>
                     </View>
                   </View>
-                ))
-              )}
-            </View>
+                  <View style={styles.sessionItemPoints}>
+                    <Text style={styles.sessionItemPointsText}>+{item.puntos} pts</Text>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
-        ) : (
-          <View style={[styles.statusCard, { alignItems: 'center', paddingVertical: 40 }]}>
-            <MaterialCommunityIcons name="trash-can-outline" size={64} color="#D1D5DB" />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginTop: 16 }}>Sin tacho vinculado</Text>
-            <Text style={{ fontSize: 14, color: '#6B7280', textAlign: 'center', marginTop: 8, paddingHorizontal: 20 }}>
-              Aún no tienes un tacho asociado a tu cuenta. ¡Vincula uno para empezar a medir tu impacto real!
-            </Text>
-          </View>
-        )}
+        </View>
 
       </ScrollView>
 

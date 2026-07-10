@@ -66,10 +66,8 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
   // O podemos modificar Modal para que use el `visible` original.
 
   const navigateTo = (path: string) => {
+    router.push(path as any);
     onClose();
-    setTimeout(() => {
-      router.push(path as any);
-    }, 50);
   };
 
   const isActive = (path: string) => pathname === path;
@@ -191,10 +189,8 @@ export const SidebarMenu = ({ visible, onClose }: SidebarMenuProps) => {
                 style={styles.logoutBtn}
                 onPress={() => {
                   logout();
+                  router.replace('/(auth)/login');
                   onClose();
-                  setTimeout(() => {
-                    router.replace('/(auth)/login');
-                  }, 10);
                 }}
               >
                 <View style={styles.logoutIconBox}>

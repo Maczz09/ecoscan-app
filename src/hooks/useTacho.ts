@@ -14,8 +14,8 @@ export interface DashboardData {
     ultima_conexion: string;
   } | null;
   metricas: {
-    eco_puntos_personales: number; 
-    racha_dias_activos: number;    
+    eco_puntos_personales: number;
+    racha_dias_activos: number;
   };
   sesion_actual: Array<{
     material: string;
@@ -27,7 +27,7 @@ export interface DashboardData {
 export const useTacho = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const setGlobalPoints = usePointsStore(state => state.setPuntos);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -36,13 +36,15 @@ export const useTacho = () => {
     try {
       // Solo mostramos la pantalla de carga completa si no es una carga de fondo
       if (!isBackground) setIsLoading(true);
-      
-      const response = await api.get('/v1/tacho/status');
-      
+
+      const response = await api.get('/v1/tacho/status', {
+        params: { t: new Date().getTime() }
+      });
+
       if (response.data.status === 'success') {
         const tachoData = response.data.data;
         setData(tachoData);
-        
+
         if (tachoData.metricas?.eco_puntos_personales !== undefined) {
           setGlobalPoints(tachoData.metricas.eco_puntos_personales);
         }
@@ -65,7 +67,7 @@ export const useTacho = () => {
       let isActive = true;
 
       // 1. Carga inicial al enfocar la pantalla
-      fetchTachoStatus(true); // background=true para no parpadear la pantalla
+      fetchTachoStatus(false); // false para que quite el spinner inicial
 
       // 2. Polling cada 3 segundos
       const interval = setInterval(() => {
@@ -81,7 +83,7 @@ export const useTacho = () => {
       };
     }, [fetchTachoStatus])
   );
-  
+
   return { data, isLoading, isRefreshing, onRefresh, refetch: fetchTachoStatus };
 };
 
